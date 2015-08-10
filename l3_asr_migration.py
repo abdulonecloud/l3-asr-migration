@@ -36,9 +36,26 @@ def add_gateway_for_physical_router():
     ext_net_list = [ network for network in networks if network['router:external'] ]
     for ext_net in ext_net_list:
         for subnet in ext_net['subnets']:
-            nwclient.create_port(network_id=ext_net['id'], device_owner='network:router_gateway', device_id='PHYSICAL_GLOBAL_ROUTER_ID')
-            nwclient.create_port(network_id=ext_net['id'], device_owner='network:router_ha_gateway', device_id='PHYSICAL_GLOBAL_ROUTER_ID')
-            nwclient.create_port(network_id=ext_net['id'], device_owner='network:router_ha_gateway', device_id='PHYSICAL_GLOBAL_ROUTER_ID')
+            body_val = {
+                           "port": {
+                                    "network_id" : ext_net['id'],
+                                    "device_owner": 'network:router_gateway',
+                                    "device_id": 'PHYSICAL_GLOBAL_ROUTER_ID'
+                           }
+                       }
+            nwclient.create_port(body=body_val)
+            
+            body_val = {
+                           "port": {
+                                    "network_id" : ext_net['id'],
+                                    "device_owner": 'network:router_ha_gateway',
+                                    "device_id": 'PHYSICAL_GLOBAL_ROUTER_ID'
+
+                           }
+                       }
+
+            nwclient.create_port(body=body_val)
+            nwclient.create_port(body=body_val)
     db.commit()    
 
 def add_router_ha_interface_for_routers(routers):
@@ -48,8 +65,15 @@ def add_router_ha_interface_for_routers(routers):
             fixed_ips = port['fixed_ips']
             subnets = [ fixed_ip['subnet_id'] for fixed_ip in fixed_ips ]
             for subnet in subnets:
-                nwclient.create_port(network_id=port['network_id'], device_owner='network:router_ha_interface', device_id=router['id'])
-                nwclient.create_port(network_id=port['network_id'], device_owner='network:router_ha_interface', device_id=router['id'])
+                body_val = {
+                           "port": {
+                                    "network_id" : port['network_id'],
+                                    "device_owner": 'network:router_ha_interface',
+                                    "device_id": router['id']
+                           }
+                       }
+                nwclient.create_port(body=body_val)
+                nwclient.create_port(body=body_val)
     db.commit()
 
 def update_cisco_phy_router_port_bindings(phy_routers, routers):
