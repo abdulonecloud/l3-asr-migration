@@ -25,18 +25,21 @@ def get_ports_by_router(router):
 def populate_cisco_phy_routers(cisco_phy_routers):
     for asr, uuid in cisco_phy_routers.items():
         c.execute("INSERT INTO cisco_phy_routers(id, name) VALUES(%s, %s)" %(uuid, asr))
+    db.commit()
 
 def update_routers_table():
     c.execute("INSERT INTO routers(tenant_id, id, name, status, admin_state_up, enable_snat) VALUES('','PHYSICAL_GLOBAL_ROUTER_ID', 'PHYSICAL_GLOBAL_ROUTER_ID', 'ACTIVE', 1, 1)")
+    db.commit()
 
 def add_gateway_for_physical_router():
     networks = nwclient.list_networks()['networks']
     ext_net_list = [ network for network in networks if network['router:external'] ]
     for ext_net in ext_net_list:
         for subnet in ext_net['subnets']:
-            nwclient.create_port(subnet_id=subnet, device_owner='network:router_gateway', device_id='PHYSICAL_GLOBAL_ROUTER_ID')
-            nwclient.create_port(subnet_id=subnet, device_owner='network:router__ha_gateway', device_id='PHYSICAL_GLOBAL_ROUTER_ID')
-            nwclient.create_port(subnet_id=subnet, device_owner='network:router_ha_gateway', device_id='PHYSICAL_GLOBAL_ROUTER_ID')
+            nwclient.create_port(network_id=ext_net['id'], device_owner='network:router_gateway', device_id='PHYSICAL_GLOBAL_ROUTER_ID')
+            nwclient.create_port(network_id=ext_net['id'], device_owner='network:router__ha_gateway', device_id='PHYSICAL_GLOBAL_ROUTER_ID')
+            nwclient.create_port(network_id=ext_net['id'], device_owner='network:router_ha_gateway', device_id='PHYSICAL_GLOBAL_ROUTER_ID')
+    db.commit()    
 
 def add_router_ha_interface_for_routers(routers):
     for router in routers:
@@ -45,8 +48,9 @@ def add_router_ha_interface_for_routers(routers):
             fixed_ips = port['fixed_ips']
             subnets = [ fixed_ip['subnet_id'] for fixed_ip in fixed_ips ]
             for subnet in subnets:
-                nwclient.create_port(subnet_id=subnet, device_owner='network:router_ha_interface', device_id=router['id'])
-                nwclient.create_port(subnet_id=subnet, device_owner='network:router_ha_interface', device_id=router['id'])
+                nwclient.create_port(network_id=port['network_id'], device_owner='network:router_ha_interface', device_id=router['id'])
+                nwclient.create_port(network_id=port['network_id'], device_owner='network:router_ha_interface', device_id=router['id'])
+    db.commit()
 
 def update_cisco_phy_router_port_bindings(phy_routers, routers):
     for router in routers:
@@ -58,6 +62,7 @@ def update_cisco_phy_router_port_bindings(phy_routers, routers):
             for subnet in subnets:
                 for k, v phy_routers.items():
                     c.execute("INSERT INTO cisco_phy_router_port_bindings VALUES(%s, %s, %s, %s)" %(port['id'], subnet, router['id'], v))
+    db.commit()
 
 if __name__ == '__main__':
     asr_config = ['ASR-A', 'ASR-B']
