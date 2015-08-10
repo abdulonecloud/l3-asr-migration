@@ -64,27 +64,28 @@ select "ips still available" as query_description;
 select * from ipavailabilityranges;
 
 select "routers and agents" as query_description;
-select routers.tenant_id,
+select keystone.project.name as tenant_name,
        routers.name,
        routers.status,
        ipallocations.ip_address as gw_interface_ip,
        routers.enable_snat,
        agents.binary as agent_binary,
        agents.host as agent_host
-from routers left join (ports, ipallocations, routerl3agentbindings, agents)
+from routers left join (ports, ipallocations, routerl3agentbindings, agents, keystone.project)
 on (routers.gw_port_id = ports.id and
     ports.id = ipallocations.port_id and
     routers.id = routerl3agentbindings.router_id and
-    routerl3agentbindings.l3_agent_id = agents.id);
+    routerl3agentbindings.l3_agent_id = agents.id and
+    routers.tenant_id = keystone.project.id);
 
 select "networks and subnets" as query_description;
-select sub.tenant_id,
+select keystone.project.name as tenant_name, 
        net.name as network_name,
        sub.name as subnet_name,
        sub.cidr,
        sub.gateway_ip,
        sub.enable_dhcp
-from subnets sub join (networks net) on (sub.network_id=net.id);
+from subnets sub join (networks net, keystone.project) on (sub.network_id=net.id and sub.tenant_id=keystone.project.id);
 
 select "networks, subnets, and ports" as query_description;
 select sub.tenant_id,
