@@ -14,14 +14,14 @@ CREATE TABLE `cisco_hosting_devices` (
   KEY `cfg_agent_id` (`cfg_agent_id`),
   CONSTRAINT `cisco_hosting_devices_ibfk_1` FOREIGN KEY (`management_port_id`) REFERENCES `ports` (`id`) ON DELETE SET NULL,
   CONSTRAINT `cisco_hosting_devices_ibfk_2` FOREIGN KEY (`cfg_agent_id`) REFERENCES `agents` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `cisco_phy_routers` (
   `id` varchar(36) NOT NULL,
   `name` varchar(255) DEFAULT NULL,
   `status` varchar(16) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 CREATE TABLE `cisco_phy_router_port_bindings` (
@@ -37,7 +37,7 @@ CREATE TABLE `cisco_phy_router_port_bindings` (
   CONSTRAINT `cisco_phy_router_port_bindings_ibfk_2` FOREIGN KEY (`subnet_id`) REFERENCES `subnets` (`id`) ON DELETE CASCADE,
   CONSTRAINT `cisco_phy_router_port_bindings_ibfk_3` FOREIGN KEY (`router_id`) REFERENCES `routers` (`id`) ON DELETE CASCADE,
   CONSTRAINT `cisco_phy_router_port_bindings_ibfk_4` FOREIGN KEY (`phy_router_id`) REFERENCES `cisco_phy_routers` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 CREATE TABLE `cisco_port_mappings` (
@@ -52,7 +52,7 @@ CREATE TABLE `cisco_port_mappings` (
   KEY `hosting_port_id` (`hosting_port_id`),
   CONSTRAINT `cisco_port_mappings_ibfk_1` FOREIGN KEY (`logical_port_id`) REFERENCES `ports` (`id`) ON DELETE CASCADE,
   CONSTRAINT `cisco_port_mappings_ibfk_2` FOREIGN KEY (`hosting_port_id`) REFERENCES `ports` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 CREATE TABLE `cisco_router_mappings` (
@@ -63,4 +63,4 @@ CREATE TABLE `cisco_router_mappings` (
   KEY `hosting_device_id` (`hosting_device_id`),
   CONSTRAINT `cisco_router_mappings_ibfk_1` FOREIGN KEY (`router_id`) REFERENCES `routers` (`id`) ON DELETE CASCADE,
   CONSTRAINT `cisco_router_mappings_ibfk_2` FOREIGN KEY (`hosting_device_id`) REFERENCES `cisco_hosting_devices` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
