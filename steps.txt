@@ -1,0 +1,33 @@
+Steps for migration
+---------------------
+0. Backup existing neutron database.
+
+1. Create the following tables in neutron database:
+
+cisco_hosting_devices
+cisco_phy_router_port_bindings
+cisco_phy_routers
+cisco_port_mappings
+cisco_router_mappings
+
+Use the create_tables.sql
+
+2. Populate the cisco_phy_routers table based on the ASR config
+
+3. Add an entry to the routers table with id=name='PHYSICAL_GLOBAL_ROUTER_ID'
+
+4. For each external_network add gateway and ha_gateway ports for PHYSICAL_GLOBAL_ROUTER_ID:
+    4.1 Get list of external networks
+    4.2 for each subnet in external network, add 3 ports with one port mapped as network:router_gateway and 2 ports mapped as network:router_ha_gateway for device_id, PHYSICAL_GLOBAL_ROUTER_ID
+
+5. Get list of existing routers
+
+6. For each router that has an interface, get the subnet_id of that port and create two additional ports with device_owner as network:router_ha_interface
+
+7. Update the cisco_phy_router_port_bindings with the port_id(network:router_ha_interface), subnet_id, router_id, and phy_router_id of the physical ASR pair.
+
+8. Stop neutron services.
+
+9. Install the neutron code for Cisco RouterPlugin from onecloud neutron repository(branch/icehouse-reorg) and configure neutron.
+
+10. start the CiscoCfgAgent service and neutron services(except, neutron-l3-agent).
