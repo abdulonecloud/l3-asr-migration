@@ -2,8 +2,8 @@ from neutronclient.neutron import client as nwc
 from oslo_utils import uuidutils
 import MySQLdb as mysql
 
-nwclient = nwc.Client('2.0', username = 'admin', password = 'admin123', tenant_name = 'admin', auth_url = 'http://10.1.25.115:5000/v2.0')
-db = mysql.connect(host="10.1.25.115", user="sabdha", passwd="t}N9yVV.", db="neutron")
+nwclient = nwc.Client('2.0', username = 'admin', password = 'admin123', tenant_name = 'admin', auth_url = 'http://10.1.25.128:5000/v2.0')
+db = mysql.connect(host="10.1.25.128", user="nelson.huang", passwd="mysql", db="neutron")
 c = db.cursor()
 
 def get_cisco_phy_routers_from_config(config):
@@ -37,7 +37,7 @@ def add_gateway_for_physical_router():
     for ext_net in ext_net_list:
         for subnet in ext_net['subnets']:
             nwclient.create_port(network_id=ext_net['id'], device_owner='network:router_gateway', device_id='PHYSICAL_GLOBAL_ROUTER_ID')
-            nwclient.create_port(network_id=ext_net['id'], device_owner='network:router__ha_gateway', device_id='PHYSICAL_GLOBAL_ROUTER_ID')
+            nwclient.create_port(network_id=ext_net['id'], device_owner='network:router_ha_gateway', device_id='PHYSICAL_GLOBAL_ROUTER_ID')
             nwclient.create_port(network_id=ext_net['id'], device_owner='network:router_ha_gateway', device_id='PHYSICAL_GLOBAL_ROUTER_ID')
     db.commit()    
 
@@ -60,7 +60,7 @@ def update_cisco_phy_router_port_bindings(phy_routers, routers):
             fixed_ips = port['fixed_ips']
             subnets = [ fixed_ip['subnet_id'] for fixed_ip in fixed_ips ]
             for subnet in subnets:
-                for k, v phy_routers.items():
+                for k, v in phy_routers.items():
                     c.execute("INSERT INTO cisco_phy_router_port_bindings VALUES(%s, %s, %s, %s)" %(port['id'], subnet, router['id'], v))
     db.commit()
 
