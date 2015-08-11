@@ -85,7 +85,8 @@ def update_cisco_phy_router_port_bindings(phy_routers, routers):
             subnets = [ fixed_ip['subnet_id'] for fixed_ip in fixed_ips ]
             for subnet in subnets:
                 for k, v in phy_routers.items():
-                    c.execute("INSERT INTO cisco_phy_router_port_bindings VALUES(%s, %s, %s, %s)" %(port['id'], subnet, router['id'], v))
+                    
+                    c.execute("INSERT INTO cisco_phy_router_port_bindings VALUES('%s', '%s', '%s', '%s')" %(port['id'], subnet, router['id'], v))
     db.commit()
 
 if __name__ == '__main__':
