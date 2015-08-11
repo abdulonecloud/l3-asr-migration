@@ -79,7 +79,7 @@ def add_router_ha_interface_for_routers(routers):
 def update_cisco_phy_router_port_bindings(phy_routers, routers):
     for router in routers:
         router_ports = get_ports_by_router(router['id'])
-        router_ha_ports = [ port for port in router_ports if router_ports['device_owner'] == 'network:router_ha_interface' ]
+        router_ha_ports = [ port for port in router_ports if port['device_owner'] == 'network:router_ha_interface' ]
         for port in router_ha_ports:
             fixed_ips = port['fixed_ips']
             subnets = [ fixed_ip['subnet_id'] for fixed_ip in fixed_ips ]
