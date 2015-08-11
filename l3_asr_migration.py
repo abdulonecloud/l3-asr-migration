@@ -24,7 +24,7 @@ def get_ports_by_router(router):
 
 def populate_cisco_phy_routers(cisco_phy_routers):
     for asr, uuid in cisco_phy_routers.items():
-        c.execute("INSERT INTO cisco_phy_routers(id, name) VALUES(%s, %s)" %(uuid, asr))
+        c.execute("INSERT INTO cisco_phy_routers(id, name) VALUES('%s', '%s')" %(uuid, asr))
     db.commit()
 
 def update_routers_table():
@@ -93,6 +93,7 @@ if __name__ == '__main__':
     asr_config = ['ASR-A', 'ASR-B']
     cisco_phy_routers = get_cisco_phy_routers_from_config(asr_config)
     update_routers_table()
+    populate_cisco_phy_routers(cisco_phy_routers)
     add_gateway_for_physical_router()
     routers = get_routers()
     add_router_ha_interface_for_routers(routers)
