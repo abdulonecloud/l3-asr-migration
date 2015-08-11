@@ -20,7 +20,7 @@ def get_routers():
 
 def get_ports_by_router(router):
     ports = nwclient.list_ports()['ports']
-    router_ports = [ port for port in ports if port['device_id'] == router ]
+    router_ports = [ port for port in ports if ( port['device_id'] == router  and port['device_owner'] == 'network:router_interface' ) ]
     return router_ports
 
 def populate_cisco_phy_routers(cisco_phy_routers):
