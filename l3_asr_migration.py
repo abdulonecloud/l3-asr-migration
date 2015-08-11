@@ -20,7 +20,7 @@ def get_routers():
 
 def get_ports_by_router(router):
     ports = nwclient.list_ports()['ports']
-    router_ports = [ port for port in ports if ( port['device_id'] == router  and port['device_owner'] == 'network:router_interface' ) ]
+    router_ports = [ port for port in ports if port['device_id'] == router ]
     return router_ports
 
 def populate_cisco_phy_routers(cisco_phy_routers):
@@ -62,7 +62,8 @@ def add_gateway_for_physical_router():
 def add_router_ha_interface_for_routers(routers):
     for router in routers:
         router_ports = get_ports_by_router(router['id'])
-        for port in router_ports:
+        router_interface_ports = [ router_port for router_port in router_ports if router_port['device_owner'] == 'network:router_interface' ]
+        for port in router_interface_ports:
             fixed_ips = port['fixed_ips']
             subnets = [ fixed_ip['subnet_id'] for fixed_ip in fixed_ips ]
             for subnet in subnets:
