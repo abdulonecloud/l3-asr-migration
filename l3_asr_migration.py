@@ -82,13 +82,10 @@ def update_cisco_phy_router_port_bindings(phy_routers, routers):
         router_ports = get_ports_by_router(router['id'])
         router_ha_ports = [ port for port in router_ports if port['device_owner'] == 'network:router_ha_interface' ]
         print router_ha_ports
-        for port in router_ha_ports:
-            fixed_ips = port['fixed_ips']
-            subnets = [ fixed_ip['subnet_id'] for fixed_ip in fixed_ips ]
-            for subnet in subnets:
-                for k, v in phy_routers.items():
-                    
-                    c.execute("INSERT INTO cisco_phy_router_port_bindings VALUES('%s', '%s', '%s', '%s')" %(port['id'], subnet, router['id'], v))
+        for k,v in phy_router.items():
+            port = router_ha_ports.pop()
+            subnet = port['fixed_ips']['subnet_id']            
+                c.execute("INSERT INTO cisco_phy_router_port_bindings VALUES('%s', '%s', '%s', '%s')" %(port['id'], subnet, router['id'], v))
     db.commit()
 
 if __name__ == '__main__':
