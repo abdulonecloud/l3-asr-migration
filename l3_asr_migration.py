@@ -85,11 +85,11 @@ def update_cisco_phy_router_port_bindings(phy_routers, routers):
 
         networks = []
         for port in router_ha_ports:
-            if port['network_id'] in networks:
+            if port['network_id'] not in networks:
                 networks.append(port['network_id'])
         for network in networks:
             router_network_ha_ports = [ port for port in router_ha_ports if port['network_id'] == network ]
-        
+            print router_network_ha_ports      
             for k,v in phy_routers.items():
                 port = router_network_ha_ports.pop()
                 subnet = port['fixed_ips'][0]['subnet_id']            
