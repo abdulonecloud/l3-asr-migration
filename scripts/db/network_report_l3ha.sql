@@ -63,6 +63,12 @@ from ipallocationpools ipa
 select "ips still available" as query_description;
 select * from ipavailabilityranges;
 
+select "vlan allocations" as query_description;
+select * from ml2_vlan_allocations;
+
+select "network / vlan association" as query_description;
+select * from ml2_network_segments;
+
 select "routers" as query_description;
 select project.name as tenant_name, 
        routers.name,
@@ -129,8 +135,8 @@ select sub.tenant_id,
 from subnets sub join (networks net, ports, ipallocations) 
 on (sub.network_id=net.id and
     ports.network_id = sub.network_id and
-    ports.id = ipallocations.port_id
-   );
+    ports.id = ipallocations.port_id)
+order by ipallocations.ip_address;
 
 select "floating ips" as query_description;
 select fip.floating_ip_address,
