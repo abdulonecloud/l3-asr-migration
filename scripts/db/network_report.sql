@@ -63,6 +63,15 @@ from ipallocationpools ipa
 select "ips still available" as query_description;
 select * from ipavailabilityranges;
 
+select "vlan allocations" as query_description;
+select * from ml2_vlan_allocations;
+
+select "network / vlan association" as query_description;
+select m.id, networks.name as net_name, m.physical_network, m.segmentation_id 
+from ml2_network_segments m
+join (networks)
+on (m.network_id = networks.id);
+
 select "routers and agents" as query_description;
 select keystone.project.name as tenant_name,
        routers.name,
@@ -89,8 +98,8 @@ from subnets sub join (networks net, keystone.project) on (sub.network_id=net.id
 
 select "networks, subnets, and ports" as query_description;
 select sub.tenant_id,
-       net.name,
-       sub.name,
+       net.name as net_name,
+       sub.name as sub_name,
        ports.mac_address,
        sub.cidr,
        ipallocations.ip_address,
@@ -99,8 +108,8 @@ select sub.tenant_id,
 from subnets sub join (networks net, ports, ipallocations) 
 on (sub.network_id=net.id and
     ports.network_id = sub.network_id and
-    ports.id = ipallocations.port_id
-   );
+    ports.id = ipallocations.port_id)
+order by ipallocations.ip_address;
 
 select "floating ips" as query_description;
 select fip.floating_ip_address,
