@@ -7,7 +7,7 @@ TENANT=$(keystone tenant-list | awk '/l3-asr-demo/ { print $2 }')
 echo $TENANT
 
 # external network
-neutron net-create exnet --tenant_id $TENANT --provider:network_type vlan --router:external True --shared --provider:physical_network phynet2 --provider:segmentation_id 599
+neutron net-create exnet --tenant_id $TENANT --provider:network_type vlan --router:external --shared --provider:physical_network phynet2 --provider:segmentation_id 599
 neutron subnet-create exnet --tenant_id $TENANT --name exnet_subnet --no-gateway --disable-dhcp --allocation-pool start=99.99.1.31,end=99.99.1.50 99.99.1.0/24
 
 # tenant networks
@@ -22,9 +22,10 @@ neutron subnet-create --tenant-id $TENANT --name subnet003 net003 10.10.3.0/24
 
 #neutron net-list
 neutron router-create --tenant-id $TENANT router001 
-EXNET_ID=$(neutron net-list | grep exnet | awk '{print $2}'
-ROUTER_ID=$(neutron router-list | grep router001 | awk '{print $2}'
-neutron router-gateway-set $ROUTER_ID $EXNET_ID
+EXNET_ID=$(neutron net-list | grep exnet | awk '{print $2}')
+ROUTER_ID=$(neutron router-list | grep router001 | awk '{print $2}')
+EX_SUBNET_ID=$(neutron subnet-list | grep exnet | awk '{print $2}')
+neutron router-gateway-set $ROUTER_ID $EXNET_ID --fixed-ip subnet_id=$EX_SUBNET_ID
 
 # sleep 10
 neutron router-interface-add router001 subnet001
