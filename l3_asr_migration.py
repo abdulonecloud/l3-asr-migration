@@ -77,6 +77,7 @@ def add_gateway_for_physical_router():
             body_val = {
                            "port": {
                                     "network_id" : ext_net['id'],
+                                    "tenant_id" : ext_net['tenant_id'],
                                     "device_owner": 'network:router_gateway',
                                     "device_id": 'PHYSICAL_GLOBAL_ROUTER_ID'
                            }
@@ -86,6 +87,7 @@ def add_gateway_for_physical_router():
             body_val = {
                            "port": {
                                     "network_id" : ext_net['id'],
+                                    "tenant_id" : ext_net['tenant_id'],
                                     "device_owner": 'network:router_ha_gateway',
                                     "device_id": 'PHYSICAL_GLOBAL_ROUTER_ID'
 
@@ -112,6 +114,7 @@ def add_router_ha_interface_for_routers(routers):
                 body_val = {
                            "port": {
                                     "network_id" : port['network_id'],
+                                    "tenant_id" : port['tenant_id'],
                                     "device_owner": 'network:router_ha_interface',
                                     "device_id": router['id']
                            }
