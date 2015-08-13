@@ -23,7 +23,7 @@ def get_routers():
     retrieve all tenant routers.
     """
     routers = nwclient.list_routers()['routers']
-    routers = [ router for router in routers if router['id'] != 'PHYSICAL_GLOBAL_ROUTER_ID' ]
+   
     return routers
 
 def get_ports_by_router(router):
@@ -101,6 +101,7 @@ def add_router_ha_interface_for_routers(routers):
     For each tenant router, retrieve all private network facing router interfaces and use its information
     to create a pair of router_ha_interfaces
     """
+    routers = [ router for router in routers if router['id'] != 'PHYSICAL_GLOBAL_ROUTER_ID' ]  
     for router in routers:
         router_ports = get_ports_by_router(router['id'])
         router_interface_ports = [ router_port for router_port in router_ports if router_port['device_owner'] == 'network:router_interface' ]
@@ -126,7 +127,7 @@ def update_cisco_phy_router_port_bindings(phy_routers, routers):
     """
     for router in routers:
         router_ports = get_ports_by_router(router['id'])
-        router_ha_ports = [ port for port in router_ports if port['device_owner'] == 'network:router_ha_interface' ]
+        router_ha_ports = [ port for port in router_ports if ( port['device_owner'] == 'network:router_ha_interface' or port['device_owner'] == 'network:router_ha_gateway' ) ]
 
         networks = []
         for port in router_ha_ports:
