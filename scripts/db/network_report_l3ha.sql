@@ -124,7 +124,7 @@ select sub.tenant_id,
 from subnets sub join (networks net) on (sub.network_id=net.id);
 
 select "networks, subnets, and ports" as query_description;
-select sub.tenant_id,
+select ports.tenant_id,
        net.name,
        sub.name,
        ports.mac_address,
@@ -151,3 +151,4 @@ on (fip.floating_network_id = n.id and
     fip.router_id = r.id and
     fip.floating_port_id = floating_ports.id and
     fip.fixed_port_id = fixed_ports.id)
+
