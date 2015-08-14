@@ -2,6 +2,7 @@ from neutronclient.neutron import client as nwc
 from oslo_utils import uuidutils
 import MySQLdb as mysql
 import pprint
+# import pudb
 
 nwclient = nwc.Client('2.0', username = 'admin', password = 'admin123', tenant_name = 'admin', auth_url = 'http://10.1.25.128:5000/v2.0')
 db = mysql.connect(host="10.1.25.128", user="nelson.huang", passwd="mysql", db="neutron")
@@ -77,6 +78,7 @@ def add_gateway_for_physical_router():
             body_val = {
                            "port": {
                                     "network_id" : ext_net['id'],
+                                    "tenant_id" : '',
                                     "device_owner": 'network:router_gateway',
                                     "device_id": 'PHYSICAL_GLOBAL_ROUTER_ID'
                            }
@@ -86,6 +88,7 @@ def add_gateway_for_physical_router():
             body_val = {
                            "port": {
                                     "network_id" : ext_net['id'],
+                                    "tenant_id" : '',
                                     "device_owner": 'network:router_ha_gateway',
                                     "device_id": 'PHYSICAL_GLOBAL_ROUTER_ID'
 
@@ -112,7 +115,7 @@ def add_router_ha_interface_for_routers(routers):
                 body_val = {
                            "port": {
                                     "network_id" : port['network_id'],
-                                    "tenant_id" : port['tenant_id'],
+                                    "tenant_id" : '',  # hides ha interface from dashboard
                                     "device_owner": 'network:router_ha_interface',
                                     "device_id": router['id']
                            }
@@ -146,6 +149,7 @@ def update_cisco_phy_router_port_bindings(phy_routers, routers):
 if __name__ == '__main__':
     asr_config = ['ASR-A', 'ASR-B']
     cisco_phy_routers = get_cisco_phy_routers_from_config(asr_config)
+    # pu.db
     update_routers_table()
     populate_cisco_phy_routers(cisco_phy_routers)
     add_gateway_for_physical_router()
