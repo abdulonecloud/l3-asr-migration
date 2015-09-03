@@ -26,7 +26,8 @@ def setup_env(config, endpoints):
     env.user = config['traffic']['remote_user']
     env.password = config['traffic']['remote_pass']
     env.skip_bad_hosts = True
-    env.gateway = config['traffic']['ssh_gateway']
+    # env.gateway = config['traffic']['ssh_gateway']
+    env.gateway = config['tenant_ssh_gateway'][endpoints['src_tenant']]
 
     logger.info("Initailized the environment with Endpoints")
     logger.info("test_results_path : %s" % (test_results_path))
@@ -190,6 +191,7 @@ def start_task(config, endpoints_list, action, testPrefix=None):
 
     output_table_data_list = []
     for endpoints in endpoints_list:
+        print endpoints['src_tenant']
         table_data = {}
         setup_env(config, endpoints)
         execute(install_hping, env)
