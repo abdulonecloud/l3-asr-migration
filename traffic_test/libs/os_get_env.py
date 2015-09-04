@@ -57,6 +57,14 @@ class OSUtils(object):
                 self.logger.info('\n\t\tMinimum Tenants count should be 2\n')
             else:
                 cfgtenants = self.config['tenants']['tenants']
+        if self.config['traffic']['type'] == 'south-north':
+            self.logger.info('\n\n\t\tPerforming south-north Test.\n')
+            if len(self.config['tenants']['tenants']) < 2:
+                cfgtenants = ''
+                #self.logger.info('\n\t\tMinimum Tenants count should be 2\n')
+            else:
+                cfgtenants = self.config['tenants']['tenants']
+
         # print cfgtenants
         return {tenant.id: tenant.name for tenant in tenants if tenant.enabled and tenant.name in cfgtenants}
 

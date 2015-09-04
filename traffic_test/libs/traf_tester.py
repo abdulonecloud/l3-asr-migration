@@ -191,7 +191,6 @@ def start_task(config, endpoints_list, action, testPrefix=None):
 
     output_table_data_list = []
     for endpoints in endpoints_list:
-        print endpoints['src_tenant']
         table_data = {}
         setup_env(config, endpoints)
         execute(install_hping, env)

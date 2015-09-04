@@ -260,7 +260,38 @@ def main():
                                                                  dest_eps,
                                                                  contract))
         logger.debug("endpoints list = %s" % (pprint.pformat(endpoints_list)))
-   
+
+    if config['traffic']['type'] == 'south-north':
+        # inter-tenant
+        for tenant in tenants.items():
+            current_router = {}
+            current_net = {}
+            routers = get_routers(tenant)
+            for route in routers:
+                rsubnets = tenant_data[tenant[1]][route['name']]['subnets']
+                if len(rsubnets) > 0:
+                    current_net = {}
+                    tsrc = []
+                    tdest = []
+                    for entry in rsubnets:
+                        tsrc.append(entry['endpoints'])
+                    src_eps = [ep for eps in tsrc for ep in eps]
+                    if config['external_host']['host'] != '':
+                        dest_eps = [config['external_host']['host']]
+                    else:
+                        dest_eps = []
+                        print "Please specify external host in the config"
+                    
+                    if len(src_eps) > 0 and len(dest_eps) > 0:
+                        endpoints_list.append(
+                            get_traffic_testing_endpoint(tenant[1],
+                                                         'External Host',
+                                                         src_eps,
+                                                         dest_eps,
+                                                         contract))
+        logger.debug("endpoints list = %s" % (pprint.pformat(endpoints_list)))
+
+
     # src_ip_list =['192.168.61.131']
     # src_ip_list =['1.1.1.17']
     # dest_ip_list = ['192.168.61.229','192.168.61.132']
