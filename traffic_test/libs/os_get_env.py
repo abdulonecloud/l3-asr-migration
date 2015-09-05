@@ -41,7 +41,6 @@ class OSUtils(object):
     def get_tenants_list(self):
         self.logger.info('Get tenant list from Keystone')
         tenants = self.ks.tenants.list()
-        #self.logger.info('\n\t\tTenants\n')
         self.logger.info(tenants)
         if self.config['traffic']['type'] == 'intra-tenant':
             self.logger.info('\n\t\tPerforming Intra-tenant Test.\n')
@@ -61,10 +60,14 @@ class OSUtils(object):
             self.logger.info('\n\n\t\tPerforming south-north Test.\n')
             if len(self.config['tenants']['tenants']) < 2:
                 cfgtenants = ''
-                #self.logger.info('\n\t\tMinimum Tenants count should be 2\n')
+            else:
+                cfgtenants = self.config['tenants']['tenants']
+        if self.config['traffic']['type'] == 'north-south':
+            self.logger.info('\n\n\t\tPerforming north-south Test.\n')
+            if len(self.config['tenants']['tenants']) < 2:
+                cfgtenants = ''
             else:
                 cfgtenants = self.config['tenants']['tenants']
 
-        # print cfgtenants
         return {tenant.id: tenant.name for tenant in tenants if tenant.enabled and tenant.name in cfgtenants}
 

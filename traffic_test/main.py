@@ -190,6 +190,7 @@ def main():
     tenant = config['tenants']['tenants']
     
     if config['traffic']['type'] == 'intra-tenant':
+        # intra-tenant
         for tenant in tenants.items():
             current_router = {}
             current_net = {}
@@ -251,7 +252,6 @@ def main():
                                             if floating_ip != '':
                                                 tdest.append(floating_ip)
                             dest_eps = tdest
-
                             if len(src_eps) > 0 and len(dest_eps) > 0:
                                 endpoints_list.append(
                                     get_traffic_testing_endpoint(tenant[1],
@@ -262,7 +262,7 @@ def main():
         logger.debug("endpoints list = %s" % (pprint.pformat(endpoints_list)))
 
     if config['traffic']['type'] == 'south-north':
-        # inter-tenant
+        # south-north
         for tenant in tenants.items():
             current_router = {}
             current_net = {}
@@ -272,7 +272,6 @@ def main():
                 if len(rsubnets) > 0:
                     current_net = {}
                     tsrc = []
-                    tdest = []
                     for entry in rsubnets:
                         tsrc.append(entry['endpoints'])
                     src_eps = [ep for eps in tsrc for ep in eps]
@@ -281,11 +280,41 @@ def main():
                     else:
                         dest_eps = []
                         print "Please specify external host in the config"
-                    
                     if len(src_eps) > 0 and len(dest_eps) > 0:
                         endpoints_list.append(
                             get_traffic_testing_endpoint(tenant[1],
                                                          'External Host',
+                                                         src_eps,
+                                                         dest_eps,
+                                                         contract))
+        logger.debug("endpoints list = %s" % (pprint.pformat(endpoints_list)))
+
+    if config['traffic']['type'] == 'north-south':
+        # north-south
+        for tenant in tenants.items():
+            current_router = {}
+            current_net = {}
+            routers = get_routers(tenant)
+            for route in routers:
+                rsubnets = tenant_data[tenant[1]][route['name']]['subnets']
+                if len(rsubnets) > 0:
+                    current_net = {}
+                    tdest = []
+                    if config['external_host']['host'] != '':
+                        src_eps = [config['external_host']['host']]
+                    else:
+                        src_eps = []
+                        print "Please specify external host in the config"
+                    for entry in rsubnets:
+                        for ip in entry['endpoints']:
+                            floating_ip = get_endpoint_floatingips(tenant, ip)
+                            if floating_ip != '':
+                                tdest.append(floating_ip)
+                    dest_eps = tdest
+                    if len(src_eps) > 0 and len(dest_eps) > 0:
+                        endpoints_list.append(
+                            get_traffic_testing_endpoint('External Host',
+                                                         tenant[1],
                                                          src_eps,
                                                          dest_eps,
                                                          contract))

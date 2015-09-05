@@ -27,8 +27,10 @@ def setup_env(config, endpoints):
     env.password = config['traffic']['remote_pass']
     env.skip_bad_hosts = True
     # env.gateway = config['traffic']['ssh_gateway']
-    env.gateway = config['tenant_ssh_gateway'][endpoints['src_tenant']]
-
+    if config['traffic']['type'] != 'north-south':
+        env.gateway = config['tenant_ssh_gateway'][endpoints['src_tenant']]
+    else:
+        env.gateway = config['tenant_ssh_gateway'][endpoints['dest_tenant']]
     logger.info("Initailized the environment with Endpoints")
     logger.info("test_results_path : %s" % (test_results_path))
     logger.info("test_method : %s" % (test_method))
