@@ -1,0 +1,30 @@
+---
+
+- hosts: opstk_icehouse
+  vars_files:
+  - vars.yml
+
+  tasks:
+  - name: ping hosts
+    ping:
+
+  - name: install_virtualenv
+    pip: name=virtualenv
+
+  - name: create_deployment_dir
+    file: path=~/ansible_icehouse state=directory mode=0755
+
+  - name: create_deployment_rollback_dir
+    file: path=~/ansible_icehouse/rollback/etc/neutron state=directory mode=0755
+
+#  - name: git_clone_l3_asr_migration
+#    git: repo={{ migration_project_repo }} dest=/root/ansible_icehouse/migration
+  
+  - name: git_clone_icehouse
+    git: repo={{ project_repo }} dest=/root/ansible_icehouse/neutron version={{ project_branch }}
+
+  - name: snapshot_pip_module_versions
+    shell: pip freeze > python_modules_step_0 chdir=/root/ansible_icehouse
+
+  - name: backup_existing_neutron_conf
+    shell: cp /etc/neutron/neutron.conf /root/ansible_icehouse/rollback/etc/neutron/neutron.conf.orig
