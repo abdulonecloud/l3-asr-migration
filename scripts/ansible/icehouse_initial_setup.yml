@@ -14,17 +14,33 @@
   - name: create_deployment_dir
     file: path=~/ansible_icehouse state=directory mode=0755
 
-  - name: create_deployment_rollback_dir
+  - name: create_deployment_rollback_etc_neutron
     file: path=~/ansible_icehouse/rollback/etc/neutron state=directory mode=0755
 
+  - name: create_deployment_rollback_usr_lib_systemd_system
+    file: path=~/ansible_icehouse/rollback/usr/lib/systemd/system state=directory mode=0755
+
+  - name: snapshot_pip_module_versions
+    shell: pip freeze > python_modules_step_0 chdir=/root/ansible_icehouse/rollback
+
+  - name: backup_existing_neutron_conf
+    shell: cp /etc/neutron/neutron.conf /root/ansible_icehouse/rollback/etc/neutron/neutron.conf.orig
+
+  - name: backup_original_systemctl_neutron_server
+    shell: cp /usr/lib/systemd/system/neutron-server.service /root/ansible_icehouse/rollback/usr/lib/systemd/system/neutron-server.service.orig
+
+#  Requires working passwordless ssh working
 #  - name: git_clone_l3_asr_migration
 #    git: repo={{ migration_project_repo }} dest=/root/ansible_icehouse/migration
   
   - name: git_clone_icehouse
     git: repo={{ project_repo }} dest=/root/ansible_icehouse/neutron version={{ project_branch }}
 
-  - name: snapshot_pip_module_versions
-    shell: pip freeze > python_modules_step_0 chdir=/root/ansible_icehouse
+  - name: install_icehouse_neutron
+    shell: python setup.py install chdir: /root/ansible_icehouse/neutron
 
-  - name: backup_existing_neutron_conf
-    shell: cp /etc/neutron/neutron.conf /root/ansible_icehouse/rollback/etc/neutron/neutron.conf.orig
+  - name: git_clone_ncclient
+    git: repo={{ ncclient_repo }} dest=/root/ansible_icehouse/ncclient
+
+  - name: install_ncclient
+    shell: python setup.py install chdir: /root/ansible_icehouse/ncclient

@@ -2,3 +2,4 @@
 project_repo: https://github.com/onecloud/neutron.git
 project_branch: icehouse_reorg
 migration_project_repo: https://github.com/onecloud/l3-asr-migration.git
+ncclient_repo: https://github.com/jon-wei/ncclient.git
