@@ -11,6 +11,7 @@
   - name: install_virtualenv
     pip: name=virtualenv
 
+# Create working directories
   - name: create_deployment_dir
     file: path=~/ansible_icehouse state=directory mode=0755
 
@@ -23,9 +24,11 @@
   - name: create_deployment_rollback_usr_lib_python_sitepackages
     file: path=~/ansible_icehouse/rollback/usr/lib state=directory mode=0755
 
+# snapshot python modules before anything happens
   - name: snapshot_pip_module_versions
     shell: pip freeze > python_modules_step_0 chdir=/root/ansible_icehouse/rollback
 
+# Backup files
   - name: backup_existing_neutron_conf
     shell: cp /etc/neutron/neutron.conf /root/ansible_icehouse/rollback/etc/neutron/neutron.conf.orig
 
@@ -60,4 +63,29 @@
 
   - name: snapshot_pip_module_versions_post_neutron_and_ncclient
     shell: pip freeze > python_modules_step_2 chdir=/root/ansible_icehouse/rollback
+
+# configure neutron.conf
+
+# configure /etc/neutron/plugins/cisco/cisco_router_plugin.ini
+
+  - name: copy_l3ha_systemctl_files
+    shell: cp neutron-server.service /usr/lib/systemd/system
+    args:
+        chdir: /root/ansible_icehouse/neutron/cfg_examples/systemctl
+
+  - name: copy_l3ha_systemctl_files
+    shell: cp neutron-cisco-cfg-agent.service /usr/lib/systemd/system
+    args:
+        chdir: /root/ansible_icehouse/neutron/cfg_examples/systemctl
+
+  - name: reload_systemctl
+    shell: systemctl daemon-reload
+
+  - name: disable l3-agent
+    shell: systemctl disable neutron-l3-agent.service
+
+  - name: enable cisco-cfg-agent
+    shell: systemctl enable neutron-cisco-cfg-agent.service
+
+
 
