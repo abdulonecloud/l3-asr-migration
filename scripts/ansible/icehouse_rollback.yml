@@ -1,0 +1,62 @@
+# This playbook restores a l3ha neutron node back to a l3-agent
+---
+
+- hosts: opstk_icehouse
+  vars_files:
+  - vars.yml
+
+  tasks:
+  - name: ping hosts
+    ping:
+
+  # stop neutron-cisco-cfg-agent
+  - name: stop-cisco-cfg-agent
+    shell: systemctl stop neutron-cisco-cfg-agent.service
+
+  # disable neutron-cisco-cfg-agent
+  - name: disable-cisco-cfg-agent
+    shell: systemctl disable neutron-cisco-cfg-agent.service
+    
+  # restore neutron.conf
+  # service_plugins
+  - name: set_service_plugin_as_linux_l3_plugin
+    lineinfile:
+    args:
+        dest: /etc/neutron/neutron.conf
+        regexp: ^service_plugins.*PhysicalCiscoRouterPlugin.*
+        line: service_plugins=neutron.services.l3_router.l3_router_plugin.L3RouterPlugin,neutron.services.firewall.fwaas_plugin.FirewallPlugin
+        state: present
+        backup: yes
+
+  # identity_uri
+  - name: remove_identity_uri
+    ini_file:
+        dest: /etc/neutron/neutron.conf
+        section: keystone_authtoken
+        option: identity_uri
+        state: absent
+        backup: yes
+
+  # delete /etc/neutron/plugins/cisco
+  - name: delete_cisco_plugin_conf_files
+    shell: rm -Rf cisco 
+    args:
+        chdir: /etc/neutron/plugins
+
+  # restore /usr/lib/systemd/system/neutron-server.service
+  - name: restore_original_neutron_server.service_file
+    shell: cp /root/ansible_icehouse/rollback/usr/lib/systemd/system/neutron-server.service.orig /usr/lib/systemd/system/neutron-server.service
+
+  # delete /usr/lib/systemd/system/neutron-cisco-cfg-agent.service
+  - name: delete_neutron-cisco-cfg-agent.service
+    shell: rm /usr/lib/systemd/system/neutron-cisco-cfg-agent.service
+
+  # reload systemctl dameon-reload
+  - name: reload_systemctl
+    shell: systemctl daemon-reload
+
+  # enable l3-agent
+  - name: enable l3-agent
+    shell: systemctl enable neutron-l3-agent.service
+
+  # restart neutron-server

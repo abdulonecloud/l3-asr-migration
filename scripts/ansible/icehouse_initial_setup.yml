@@ -69,7 +69,7 @@
     lineinfile:
     args:
         dest: /etc/neutron/neutron.conf 
-        regexp: ^service_plugins.*L3RouterPlugin,.*neutron.services.firewall.fwaas_plugin.FirewallPlugin
+        regexp: ^service_plugins.*
         line: service_plugins= neutron.plugins.cisco.service_plugins.asr_cisco_router_plugin.PhysicalCiscoRouterPlugin,neutron.services.firewall.fwaas_plugin.FirewallPlugin
         state: present
         backup: yes
