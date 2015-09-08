@@ -1,7 +1,19 @@
 ---
+# neutron repo
 project_repo: https://github.com/onecloud/neutron.git
 project_branch: icehouse_reorg
+
+# migration repo
 migration_project_repo: https://github.com/onecloud/l3-asr-migration.git
+
+# ncclient repo
 ncclient_repo: https://github.com/jon-wei/ncclient.git
+
+#cisco_router_plugin.ini related
+my_deployment_id: mig128
+other_deployment_ids: mig,mig1
+
+# ASR related
+admin_password: password 
 asr1k_a: 10.1.10.252
 asr1k_b: 10.1.10.253

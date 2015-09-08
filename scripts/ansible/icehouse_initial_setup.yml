@@ -89,13 +89,16 @@
         chdir: /root/ansible_icehouse/neutron/cfg_examples
 
   - name: set_asr_router_A
-    ini_file: dest=/etc/neutron/plugins/cisco/cisco_router_plugin.ini section=asr:{{ asr1k_a }} option=password value=!cisco123 backup=yes
+    ini_file: dest=/etc/neutron/plugins/cisco/cisco_router_plugin.ini section=asr:{{ asr1k_a }} option=password value={{ admin_password }} backup=yes
 
   - name: set_asr_router_B
-    ini_file: dest=/etc/neutron/plugins/cisco/cisco_router_plugin.ini section=asr:{{ asr1k_b }} option=password value=!cisco123 backup=yes
+    ini_file: dest=/etc/neutron/plugins/cisco/cisco_router_plugin.ini section=asr:{{ asr1k_b }} option=password value={{ admin_password }} backup=yes
 
-  - name: set_deployment_id
-    ini_file: dest=/etc/neutron/plugins/cisco/cisco_router_plugin.ini section=deployment_ids option=mine value=mig128 backup=yes
+  - name: set_my_deployment_id
+    ini_file: dest=/etc/neutron/plugins/cisco/cisco_router_plugin.ini section=deployment_ids option=mine value={{ my_deployment_id }} backup=yes
+
+  - name: set_other_deployment_ids
+    ini_file: dest=/etc/neutron/plugins/cisco/cisco_router_plugin.ini section=deployment_ids option=others value={{ other_deployment_ids }} backup=yes
 
   - name: copy_l3ha_systemctl_files
     shell: cp neutron-server.service /usr/lib/systemd/system
