@@ -66,10 +66,21 @@
 
 # configure neutron.conf
   - name: set_service_plugin_as_cisco_router_plugin
-    ini_file: dest=/etc/neutron/neutron.conf section=default option=service_plugins value=neutron.plugins.cisco.service_plugins.asr_cisco_router_plugin.PhysicalCiscoRouterPlugin,neutron.services.firewall.fwaas_plugin.FirewallPlugin backup=yes
+    lineinfile:
+    args:
+        dest: /etc/neutron/neutron.conf 
+        regexp: ^service_plugins.*L3RouterPlugin,.*neutron.services.firewall.fwaas_plugin.FirewallPlugin
+        line: service_plugins= neutron.plugins.cisco.service_plugins.asr_cisco_router_plugin.PhysicalCiscoRouterPlugin,neutron.services.firewall.fwaas_plugin.FirewallPlugin
+        state: present
+        backup: yes
 
   - name: set_identity_uri
-    ini_file: dest=/etc/neutron/neutron.conf section=keystone_authtoken option=identity_uri value=http://{{ ansible_eth0.ipv4.address }}:35357/ backup=yes
+    ini_file:
+      dest: /etc/neutron/neutron.conf
+      section: keystone_authtoken
+      option: identity_uri
+      value: "http://{{ ansible_eth0.ipv4.address }}:35357/"
+      backup: yes
 
 # configure /etc/neutron/plugins/cisco/cisco_router_plugin.ini
   - name: copy_cisco_plugin_conf_files
@@ -78,10 +89,10 @@
         chdir: /root/ansible_icehouse/neutron/cfg_examples
 
   - name: set_asr_router_A
-    ini_file: dest=/etc/neutron/plugins/cisco/cisco_router_plugin.ini section="asr:10.1.10.252" option=password value=!cisco123 backup=yes
+    ini_file: dest=/etc/neutron/plugins/cisco/cisco_router_plugin.ini section=asr:{{ asr1k_a }} option=password value=!cisco123 backup=yes
 
   - name: set_asr_router_B
-    ini_file: dest=/etc/neutron/plugins/cisco/cisco_router_plugin.ini section="asr:10.1.10.253" option=password value=!cisco123 backup=yes
+    ini_file: dest=/etc/neutron/plugins/cisco/cisco_router_plugin.ini section=asr:{{ asr1k_b }} option=password value=!cisco123 backup=yes
 
   - name: set_deployment_id
     ini_file: dest=/etc/neutron/plugins/cisco/cisco_router_plugin.ini section=deployment_ids option=mine value=mig128 backup=yes
