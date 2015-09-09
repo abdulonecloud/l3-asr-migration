@@ -58,13 +58,13 @@ class OSUtils(object):
                 cfgtenants = self.config['tenants']['tenants']
         if self.config['traffic']['type'] == 'south-north':
             self.logger.info('\n\n\t\tPerforming south-north Test.\n')
-            if len(self.config['tenants']['tenants']) < 2:
+            if len(self.config['tenants']['tenants']) < 1:
                 cfgtenants = ''
             else:
                 cfgtenants = self.config['tenants']['tenants']
         if self.config['traffic']['type'] == 'north-south':
             self.logger.info('\n\n\t\tPerforming north-south Test.\n')
-            if len(self.config['tenants']['tenants']) < 2:
+            if len(self.config['tenants']['tenants']) < 1:
                 cfgtenants = ''
             else:
                 cfgtenants = self.config['tenants']['tenants']
