@@ -16,26 +16,29 @@
   # disable neutron-cisco-cfg-agent
   - name: disable-cisco-cfg-agent
     shell: systemctl disable neutron-cisco-cfg-agent.service
-    
+  
+  # This section is causing problems
   # restore neutron.conf
   # service_plugins
-  - name: set_service_plugin_as_linux_l3_plugin
-    lineinfile:
-    args:
-        dest: /etc/neutron/neutron.conf
-        regexp: ^service_plugins.*PhysicalCiscoRouterPlugin.*
-        line: service_plugins=neutron.services.l3_router.l3_router_plugin.L3RouterPlugin,neutron.services.firewall.fwaas_plugin.FirewallPlugin
-        state: present
-        backup: yes
+  #- name: set_service_plugin_as_linux_l3_plugin
+  #  lineinfile:
+  #  args:
+  #      dest: /etc/neutron/neutron.conf
+  #      regexp: ^service_plugins=.*
+  #      line: service_plugins=neutron.services.l3_router.l3_router_plugin.L3RouterPlugin,neutron.services.firewall.fwaas_plugin.FirewallPlugin
+  #      state: present
+  #      backup: yes
 
+  # This section is causing problems
   # identity_uri
-  - name: remove_identity_uri
-    ini_file:
-        dest: /etc/neutron/neutron.conf
-        section: keystone_authtoken
-        option: identity_uri
-        state: absent
-        backup: yes
+  #- name: remove_identity_uri
+  #  ini_file:
+  #      dest: /etc/neutron/neutron.conf
+  #      section: keystone_authtoken
+  #      option: identity_uri
+  #      state: absent
+  - name: restore_orig_neutron_conf
+    shell: cp -f /root/ansible_icehouse/rollback/etc/neutron/neutron.conf.orig /etc/neutron/neutron.conf
 
   # delete /etc/neutron/plugins/cisco
   - name: delete_cisco_plugin_conf_files
@@ -59,4 +62,10 @@
   - name: enable l3-agent
     shell: systemctl enable neutron-l3-agent.service
 
+  # restart l3-agent
+  - name: restart-l3-agent
+    shell: systemctl restart neutron-l3-agent.service
+
   # restart neutron-server
+  - name: restart_neutron_server
+    shell: systemctl restart neutron-server.service
