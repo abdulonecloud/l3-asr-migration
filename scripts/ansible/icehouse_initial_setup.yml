@@ -69,7 +69,7 @@
     lineinfile:
     args:
         dest: /etc/neutron/neutron.conf 
-        regexp: ^service_plugins.*
+        regexp: ^service_plugins.*=
         line: service_plugins= neutron.plugins.cisco.service_plugins.asr_cisco_router_plugin.PhysicalCiscoRouterPlugin,neutron.services.firewall.fwaas_plugin.FirewallPlugin
         state: present
         backup: yes
@@ -113,11 +113,19 @@
   - name: reload_systemctl
     shell: systemctl daemon-reload
 
-  - name: disable l3-agent
+  - name: disable_l3-agent
     shell: systemctl disable neutron-l3-agent.service
 
-  - name: enable cisco-cfg-agent
+  - name: enable_cisco-cfg-agent
     shell: systemctl enable neutron-cisco-cfg-agent.service
 
+  - name: stop_l3_agent
+    shell: systemctl stop neutron-l3-agent.service
+  
+  - name: start_cisco-cfg-agent
+    shell: systemctl start neutron-cisco-cfg-agent.service
+
+  - name: restart_neutron_server
+    shell: systemctl restart neutron-server.service
 
 
