@@ -74,12 +74,15 @@
         state: present
         backup: yes
 
+  - name: determine interface
+    set_fact: ipv4_address="{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
+
   - name: set_identity_uri
     ini_file:
       dest: /etc/neutron/neutron.conf
       section: keystone_authtoken
       option: identity_uri
-      value: "http://{{ ansible_eth0.ipv4.address }}:35357/"
+      value: "http://{{ ipv4_address }}:35357/"
       backup: yes
 
 # configure /etc/neutron/plugins/cisco/cisco_router_plugin.ini

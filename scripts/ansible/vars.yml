@@ -10,10 +10,10 @@ migration_project_repo: https://github.com/onecloud/l3-asr-migration.git
 ncclient_repo: https://github.com/jon-wei/ncclient.git
 
 #cisco_router_plugin.ini related
-my_deployment_id: mig128
-other_deployment_ids: mig,mig1
+my_deployment_id: ans32
+other_deployment_ids: mig,mig1,mig128
 
 # ASR related
-admin_password: password 
+admin_password: "!cisco123"
 asr1k_a: 10.1.10.252
 asr1k_b: 10.1.10.253
