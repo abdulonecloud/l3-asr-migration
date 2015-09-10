@@ -11,7 +11,7 @@ filedir = os.getcwd()
 def get_list_of_filenames():
     file_list = []
     for file in os.listdir(filedir):
-        if file.endswith("%s.txt" % (fileid)):
+        if file.startswith("test") and file.endswith("%s.txt" % (fileid)):
             file_list.append(file)
     return file_list
 
@@ -70,8 +70,8 @@ def main():
     script_output = process_files(file_list)
     json_output = json.JSONEncoder().encode(script_output)
     # sample output
-    # {'test.txt': ({'packet_loss': '0%'},
-    #               {'rtt_min': '4.3', 'rtt_avg': '5.5', 'rtt_max': '6.3'})}
+    {'test.txt': ({'packet_loss': '0%'},
+                  {'rtt_min': '4.3', 'rtt_avg': '5.5', 'rtt_max': '6.3'})}
     print json_output
 
 if __name__ == '__main__':

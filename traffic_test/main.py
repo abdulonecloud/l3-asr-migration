@@ -133,6 +133,24 @@ def get_default_icmp_contract():
     return contract
 
 
+def get_default_tcp_contract():
+    contract = [{'name': 'allow_ssh',
+                 'protocol': 'tcp',
+                 'port': '22',
+                 'direction': 'in',
+                 'action': 'allow'}]
+    return contract
+
+
+def get_default_udp_contract():
+    contract = [{'name': 'allow_udp',
+                 'protocol': 'udp',
+                 'port': 'None',
+                 'direction': 'in',
+                 'action': 'allow'}]
+    return contract
+
+
 def get_traffic_testing_endpoint(src_tenant, dest_tenant,
                                  src_eps, dest_eps, contract):
     endpoint = {'src_tenant': src_tenant,
@@ -186,7 +204,15 @@ def main():
         tenant_data[tenant[1]] = router_data
     # print tenant_data
     
-    contract = get_default_icmp_contract()
+    test_method = config['traffic']['test_method']
+    contract = []
+    if 'icmp' in test_method or len(test_method) == 0:
+        contract.append(get_default_icmp_contract()[0])
+    if 'tcp' in test_method:
+        contract.append(get_default_tcp_contract()[0])
+    if 'udp' in test_method:
+        contract.append(get_default_udp_contract()[0])
+    print contract
     tenant = config['tenants']['tenants']
     
     if config['traffic']['type'] == 'intra-tenant':
@@ -321,10 +347,8 @@ def main():
         logger.debug("endpoints list = %s" % (pprint.pformat(endpoints_list)))
 
 
-    # src_ip_list =['192.168.61.131']
-    # src_ip_list =['1.1.1.17']
-    # dest_ip_list = ['192.168.61.229','192.168.61.132']
-    # dest_ip_list = ['1.1.1.15','1.1.1.16','2.2.2.5','2.2.2.6']
+    # src_ip_list = ['192.168.61.131']
+    # dest_ip_list = ['192.168.61.129', '192.168.61.132']
     # contract = [{'name': 'allow_ssh',
     #             'protocol': 'tcp',
     #             'port': 22,
