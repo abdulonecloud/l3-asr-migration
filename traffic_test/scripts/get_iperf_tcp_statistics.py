@@ -26,7 +26,8 @@ def process_files(file_list):
 def get_test_results(file):
     """
     For a given test output file, return a tuple of the following format
-    (bandwidth_loss dict wth keys interval_time, transferred, bandwidth) 
+    (bandwidth_loss dict wth keys interval_time, transferred, bandwidth, 
+     jitter, loss_datagram, total_datagram, loss_percent)
     """
     f = open(file, 'r')
 
@@ -40,6 +41,11 @@ def get_test_results(file):
                 {'interval_time': str(report_data[1]),   # NOQA
                  'transferred': str(report_data[2]),   # NOQA
                  'bandwidth': str(report_data[3].replace('\n', ''))}   # NOQA
+        else:
+            bandwidth_stats = \
+                {'interval_time': '',   # NOQA
+                 'transferred': '',   # NOQA
+                 'bandwidth': ''}   # NOQA    
     
     test_results = {'bandwidth_stats': bandwidth_stats}
 

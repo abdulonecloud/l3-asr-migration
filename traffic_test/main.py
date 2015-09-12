@@ -152,12 +152,13 @@ def get_default_udp_contract():
 
 
 def get_traffic_testing_endpoint(src_tenant, dest_tenant,
-                                 src_eps, dest_eps, contract):
+                                 src_eps, dest_eps, contract, test_type):
     endpoint = {'src_tenant': src_tenant,
                 'dest_tenant': dest_tenant,
                 'src_eps': src_eps,
                 'dest_eps': dest_eps,
-                'contract': contract}
+                'contract': contract,
+                'test_type': test_type}
     return endpoint
 
 
@@ -212,10 +213,9 @@ def main():
         contract.append(get_default_tcp_contract()[0])
     if 'udp' in test_method:
         contract.append(get_default_udp_contract()[0])
-    print contract
     tenant = config['tenants']['tenants']
     
-    if config['traffic']['type'] == 'intra-tenant':
+    if config['traffic']['type'] == 'intra-tenant' or config['traffic']['type'] == 'all':
         # intra-tenant
         for tenant in tenants.items():
             current_router = {}
@@ -250,10 +250,10 @@ def main():
                                                                  tenant[1],
                                                                  net['src_eps'],
                                                                  net['dest_eps'],
-                                                                 contract))
-        logger.debug("endpoints list = %s" % (pprint.pformat(endpoints_list)))
+                                                                 contract,
+                                                                 'intra-tenant'))
 
-    if config['traffic']['type'] == 'inter-tenant':
+    if config['traffic']['type'] == 'inter-tenant' or config['traffic']['type'] == 'all':
         # inter-tenant
         for tenant in tenants.items():
             current_router = {}
@@ -284,10 +284,10 @@ def main():
                                                                  nexttenant[1],
                                                                  src_eps,
                                                                  dest_eps,
-                                                                 contract))
-        logger.debug("endpoints list = %s" % (pprint.pformat(endpoints_list)))
+                                                                 contract,
+                                                                 'inter-tenant'))
 
-    if config['traffic']['type'] == 'south-north':
+    if config['traffic']['type'] == 'south-north' or config['traffic']['type'] == 'all':
         # south-north
         for tenant in tenants.items():
             current_router = {}
@@ -312,10 +312,10 @@ def main():
                                                          'External Host',
                                                          src_eps,
                                                          dest_eps,
-                                                         contract))
-        logger.debug("endpoints list = %s" % (pprint.pformat(endpoints_list)))
+                                                         contract,
+                                                         'south-north'))
 
-    if config['traffic']['type'] == 'north-south':
+    if config['traffic']['type'] == 'north-south' or config['traffic']['type'] == 'all':
         # north-south
         for tenant in tenants.items():
             current_router = {}
@@ -343,12 +343,17 @@ def main():
                                                          tenant[1],
                                                          src_eps,
                                                          dest_eps,
-                                                         contract))
-        logger.debug("endpoints list = %s" % (pprint.pformat(endpoints_list)))
+                                                         contract,
+                                                         'north-south'))
+    logger.debug("endpoints list = %s" % (pprint.pformat(endpoints_list)))
 
 
-    # src_ip_list = ['192.168.61.131']
-    # dest_ip_list = ['192.168.61.129', '192.168.61.132']
+    #src_ip_list = ['192.168.61.131']
+    # src_ip_list =['1.1.1.17']
+    # dest_ip_list = ['192.168.61.229','192.168.61.132']
+    #dest_ip_list = ['192.168.61.129', '192.168.61.132']
+    # dest_ip_list = ['10.1.25.128', '10.1.25.129', '10.1.25.130']
+    # dest_ip_list = ['1.1.1.15','1.1.1.16','2.2.2.5','2.2.2.6']
     # contract = [{'name': 'allow_ssh',
     #             'protocol': 'tcp',
     #             'port': 22,
@@ -366,6 +371,14 @@ def main():
     #             'dest_eps': dest_ip_list,
     #             'contract': contract}
     # endpoints_list = [endpoints]
+
+    # # endpoints = {'src_tenant': 'sample',
+    # #             'dest_tenant': 'sample',
+    # #             'src_eps': src_ip_list,
+    # #             'dest_eps': dest_ip_list,
+    # #             'contract': contract}
+    # # endpoints_list = [endpoints]
+
 
     if tid:
         remote_libs.start_task(config, endpoints_list, action, tid)

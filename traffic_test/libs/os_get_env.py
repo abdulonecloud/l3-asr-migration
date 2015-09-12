@@ -42,27 +42,27 @@ class OSUtils(object):
         self.logger.info('Get tenant list from Keystone')
         tenants = self.ks.tenants.list()
         self.logger.info(tenants)
-        if self.config['traffic']['type'] == 'intra-tenant':
+        if self.config['traffic']['type'] == 'intra-tenant' or self.config['traffic']['type'] == 'all':
             self.logger.info('\n\t\tPerforming Intra-tenant Test.\n')
             if len(self.config['tenants']['tenants']) > 0:
                 self.logger.info('\n\t\tMore than one Tenant found. Processing first tenant alone by default.\n')
                 cfgtenants = self.config['tenants']['tenants'][0]
             else:
                 cfgtenants = self.config['tenants']['tenants']
-        if self.config['traffic']['type'] == 'inter-tenant':
+        if self.config['traffic']['type'] == 'inter-tenant' or self.config['traffic']['type'] == 'all':
             self.logger.info('\n\n\t\tPerforming Inter-tenant Test.\n')
             if len(self.config['tenants']['tenants']) < 2:
                 cfgtenants = ''
                 self.logger.info('\n\t\tMinimum Tenants count should be 2\n')
             else:
                 cfgtenants = self.config['tenants']['tenants']
-        if self.config['traffic']['type'] == 'south-north':
+        if self.config['traffic']['type'] == 'south-north' or self.config['traffic']['type'] == 'all':
             self.logger.info('\n\n\t\tPerforming south-north Test.\n')
             if len(self.config['tenants']['tenants']) < 1:
                 cfgtenants = ''
             else:
                 cfgtenants = self.config['tenants']['tenants']
-        if self.config['traffic']['type'] == 'north-south':
+        if self.config['traffic']['type'] == 'north-south' or self.config['traffic']['type'] == 'all':
             self.logger.info('\n\n\t\tPerforming north-south Test.\n')
             if len(self.config['tenants']['tenants']) < 1:
                 cfgtenants = ''

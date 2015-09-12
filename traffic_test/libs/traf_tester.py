@@ -8,6 +8,8 @@ import re
 from multiprocessing import Pool, Process, Queue
 from prettytable import PrettyTable
 import json
+from itertools import *
+from operator import *
 
 path = os.getcwd() + '/scripts'
 os.path.join(path)
@@ -15,6 +17,10 @@ os.path.join(path)
 test_results_path = '~/dp_test_results'
 
 logger = logging.getLogger(__name__)
+
+def unique_justseen(iterable, key=None):
+    "List unique elements, preserving order. Remember only the element just seen."
+    return imap(next, imap(itemgetter(1), groupby(iterable, key)))
 
 
 def setup_env(config, endpoints):
@@ -27,7 +33,7 @@ def setup_env(config, endpoints):
     env.password = config['traffic']['remote_pass']
     env.skip_bad_hosts = True
     # env.gateway = config['traffic']['ssh_gateway']
-    if config['traffic']['type'] != 'north-south':
+    if endpoints['test_type'] != 'north-south':
         env.gateway = config['tenant_ssh_gateway'][endpoints['src_tenant']]
     else:
         env.gateway = config['tenant_ssh_gateway'][endpoints['dest_tenant']]
@@ -86,7 +92,7 @@ def install_iperf(environment):
 
 
 
-def setup_iperf_env(config, src_tenant, dest_tenant, endpoints):
+def setup_iperf_env(config, src_tenant, dest_tenant, endpoints, test_type):
     endpoints = endpoints
     test_results_path = config['traffic']['test_results_path']
     test_method = config['traffic']['test_method']
@@ -96,7 +102,7 @@ def setup_iperf_env(config, src_tenant, dest_tenant, endpoints):
     env.password = config['traffic']['remote_pass']
     env.skip_bad_hosts = True
     # env.gateway = config['traffic']['ssh_gateway']
-    if config['traffic']['type'] != 'north-south':
+    if test_type != 'north-south':
         env.gateway = config['tenant_ssh_gateway'][src_tenant]
     else:
         env.gateway = config['tenant_ssh_gateway'][dest_tenant]
@@ -198,11 +204,12 @@ def iperf_tcp_pretty_table_content(config, data):
                 bandwidth_stats = \
                     v['test_result'][test_result_file]['bandwidth_stats']
 
-                x.add_row([src_tenant, src_ep,
-                           dest_tenant, dest_ep.replace('_', '.'),
-                           bandwidth_stats['interval_time'],
-                           bandwidth_stats['transferred'],
-                           bandwidth_stats['bandwidth']])
+                if bandwidth_stats['interval_time'] and bandwidth_stats['transferred'] and bandwidth_stats['bandwidth']:
+                    x.add_row([src_tenant, src_ep,
+                               dest_tenant, dest_ep.replace('_', '.'),
+                               bandwidth_stats['interval_time'],
+                               bandwidth_stats['transferred'],
+                               bandwidth_stats['bandwidth']])
     print x
 
 
@@ -223,7 +230,6 @@ def iperf_udp_pretty_table_content(config, data):
 
     # One space between column edges and contents (default)
     x.padding_width = 1
-    status = None
 
     dest_ep_regex = ".*-*-(?P<dest_ip>[0-9]+_[0-9]+_[0-9]+_[0-9]+)-.*"
     for content in data:
@@ -245,23 +251,16 @@ def iperf_udp_pretty_table_content(config, data):
                 bandwidth_loss_percent = \
                     bandwidth_stats['loss_percent']  # NOQA
 
-                try:
-                    if (float(bandwidth_loss_percent) <= float(config['traffic']['allowed_delta_percentage'])):  # NOQA
-                        status = 'Success'
-                    else:
-                        status = 'Failed'
-                except ValueError:
-                    status = 'Failed'
-
-                x.add_row([src_tenant, src_ep,
-                           dest_tenant, dest_ep.replace('_', '.'),
-                           bandwidth_stats['interval_time'],
-                           bandwidth_stats['transferred'],
-                           bandwidth_stats['bandwidth'],
-                           bandwidth_stats['jitter'],
-                           bandwidth_stats['loss_datagram'],
-                           bandwidth_stats['total_datagram'],
-                           bandwidth_loss_percent+" %"])
+                if bandwidth_stats['interval_time'] and bandwidth_stats['transferred'] and bandwidth_stats['bandwidth']:
+                    x.add_row([src_tenant, src_ep,
+                               dest_tenant, dest_ep.replace('_', '.'),
+                               bandwidth_stats['interval_time'],
+                               bandwidth_stats['transferred'],
+                               bandwidth_stats['bandwidth'],
+                               bandwidth_stats['jitter'],
+                               bandwidth_stats['loss_datagram'],
+                               bandwidth_stats['total_datagram'],
+                               bandwidth_loss_percent+" %"])
     print x
 
 
@@ -441,8 +440,8 @@ def start_task(config, endpoints_list, action, testPrefix=None):
     output_table_data_list = []
     tcp_output_table_data_list = []
     udp_output_table_data_list = []
-    for endpoints in endpoints_list:
-        table_data = {}
+    table_data = {}
+    iperf_endpoint_list = list(unique_justseen(endpoints_list, key=itemgetter('test_type')))
     if action == 'start':
         for endpoints in endpoints_list:
             for contract in endpoints['contract']:
@@ -452,32 +451,32 @@ def start_task(config, endpoints_list, action, testPrefix=None):
                     execute(install_hping, env)
                     execute(test_ping, env, config,
                             endpoints, contract, timestamp)
-        endpoints = endpoints_list[0]
-        for contract in endpoints['contract']:
-            if contract['protocol'] == 'tcp':
-                server_ip = [endpoints['dest_eps'][0]]
-                client_ip = endpoints['src_eps']
-                setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], server_ip)
-                execute(create_test_results_directory, env)
-                execute(install_iperf, env)
-                server = ''
-                execute(test_tcp, env, config, server, server_ip, contract, timestamp)
-                setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], client_ip)
-                execute(install_iperf, env)
-                server = server_ip[0]
-                execute(test_tcp, env, config, server, client_ip, contract, timestamp)
-            if contract['protocol'] == 'udp':
-                server_ip = [endpoints['dest_eps'][0]]
-                client_ip = endpoints['src_eps']
-                setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], server_ip)
-                execute(create_test_results_directory, env)
-                execute(install_iperf, env)
-                server = ''
-                execute(test_udp, env, config, server, server_ip, contract, timestamp)
-                setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], client_ip)
-                execute(install_iperf, env)
-                server = server_ip[0]
-                execute(test_udp, env, config, server, client_ip, contract, timestamp)
+        for endpoints in iperf_endpoint_list:
+            for contract in endpoints['contract']:
+                if contract['protocol'] == 'tcp':
+                    server_ip = [endpoints['dest_eps'][0]]
+                    client_ip = endpoints['src_eps']
+                    setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], server_ip, endpoints['test_type'])
+                    execute(create_test_results_directory, env)
+                    execute(install_iperf, env)
+                    server = ''
+                    execute(test_tcp, env, config, server, server_ip, contract, timestamp)
+                    setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], client_ip, endpoints['test_type'])
+                    execute(install_iperf, env)
+                    server = server_ip[0]
+                    execute(test_tcp, env, config, server, client_ip, contract, timestamp)
+                if contract['protocol'] == 'udp':
+                    server_ip = [endpoints['dest_eps'][0]]
+                    client_ip = endpoints['src_eps']
+                    setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], server_ip, endpoints['test_type'])
+                    execute(create_test_results_directory, env)
+                    execute(install_iperf, env)
+                    server = ''
+                    execute(test_udp, env, config, server, server_ip, contract, timestamp)
+                    setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], client_ip, endpoints['test_type'])
+                    execute(install_iperf, env)
+                    server = server_ip[0]
+                    execute(test_udp, env, config, server, client_ip, contract, timestamp)
     
     if action == 'stop':
         for endpoints in endpoints_list:
@@ -486,28 +485,28 @@ def start_task(config, endpoints_list, action, testPrefix=None):
                     setup_env(config, endpoints)
                     table_data = execute(stop_traffic, env, endpoints, timestamp)
                     output_table_data_list.append(table_data)
-        endpoints = endpoints_list[0]
-        for contract in endpoints['contract']:
-            if contract['protocol'] == 'tcp':
-                server_ip = [endpoints['dest_eps'][0]]
-                client_ip = endpoints['src_eps']
-                setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], server_ip)
-                server = ''
-                execute(stop_iperf_traffic, env, 'tcp', server, server_ip, endpoints['src_tenant'], endpoints['dest_tenant'], timestamp)
-                setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], client_ip)
-                server = server_ip[0]
-                table_data = execute(stop_iperf_traffic, env, 'tcp', server, client_ip, endpoints['src_tenant'], endpoints['dest_tenant'], timestamp)
-                tcp_output_table_data_list.append(table_data)
-            if contract['protocol'] == 'udp':
-                server_ip = [endpoints['dest_eps'][0]]
-                client_ip = endpoints['src_eps']
-                setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], server_ip)
-                server = ''
-                execute(stop_iperf_traffic, env, 'udp', server, server_ip, endpoints['src_tenant'], endpoints['dest_tenant'], timestamp)
-                setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], client_ip)
-                server = server_ip[0]
-                table_data = execute(stop_iperf_traffic, env, 'udp', server, client_ip, endpoints['src_tenant'], endpoints['dest_tenant'], timestamp)
-                udp_output_table_data_list.append(table_data)
+        for endpoints in iperf_endpoint_list:
+            for contract in endpoints['contract']:
+                if contract['protocol'] == 'tcp':
+                    server_ip = [endpoints['dest_eps'][0]]
+                    client_ip = endpoints['src_eps']
+                    setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], server_ip, endpoints['test_type'])
+                    server = ''
+                    execute(stop_iperf_traffic, env, 'tcp', server, server_ip, endpoints['src_tenant'], endpoints['dest_tenant'], timestamp)
+                    setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], client_ip, endpoints['test_type'])
+                    server = server_ip[0]
+                    table_data = execute(stop_iperf_traffic, env, 'tcp', server, client_ip, endpoints['src_tenant'], endpoints['dest_tenant'], timestamp)
+                    tcp_output_table_data_list.append(table_data)
+                if contract['protocol'] == 'udp':
+                    server_ip = [endpoints['dest_eps'][0]]
+                    client_ip = endpoints['src_eps']
+                    setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], server_ip, endpoints['test_type'])
+                    server = ''
+                    execute(stop_iperf_traffic, env, 'udp', server, server_ip, endpoints['src_tenant'], endpoints['dest_tenant'], timestamp)
+                    setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], client_ip, endpoints['test_type'])
+                    server = server_ip[0]
+                    table_data = execute(stop_iperf_traffic, env, 'udp', server, client_ip, endpoints['src_tenant'], endpoints['dest_tenant'], timestamp)
+                    udp_output_table_data_list.append(table_data)
     
     print "Traffic Test Type: "+config['traffic']['type']
     print "\n"

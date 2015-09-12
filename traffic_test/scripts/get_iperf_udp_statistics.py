@@ -48,6 +48,15 @@ def get_test_results(file):
                  'loss_datagram': str(loss_datagram),  # NOQA
                  'total_datagram': str(total_datagram),  # NOQA
                  'loss_percent': str(loss_percent)}
+        else:
+            bandwidth_stats = \
+                {'interval_time': '',   # NOQA
+                 'transferred': '',   # NOQA
+                 'bandwidth': '',   # NOQA
+                 'jitter': '',  # NOQA
+                 'loss_datagram': '',  # NOQA
+                 'total_datagram': '',  # NOQA
+                 'loss_percent': ''}
     
     test_results = {'bandwidth_stats': bandwidth_stats}
 
