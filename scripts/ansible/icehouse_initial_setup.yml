@@ -130,5 +130,3 @@
 
   - name: restart_neutron_server
     shell: systemctl restart neutron-server.service
-
-
