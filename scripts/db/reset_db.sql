@@ -13,4 +13,11 @@ delete from cisco_phy_router_port_bindings;
 # remove cisco_phy_routers
 delete from cisco_phy_routers;
 
+# drop tables
+drop TABLE if exists `cisco_hosting_devices`;
+drop TABLE if exists `cisco_phy_routers`;
+drop TABLE if exists `cisco_phy_router_port_bindings`;
+drop TABLE if exists `cisco_port_mappings`;
+drop TABLE if exists `cisco_router_mappings`;
+
 
