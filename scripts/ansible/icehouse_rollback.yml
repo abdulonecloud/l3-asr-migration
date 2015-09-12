@@ -37,6 +37,20 @@
   #      section: keystone_authtoken
   #      option: identity_uri
   #      state: absent
+  
+  - name: create_backup_dir_name
+    set_fact: site_packages_backup="site_packages_{{  hostvars[inventory_hostname].ansible_date_time.iso8601 }}"
+
+  - name: backup_existing_usr_lib_python_site_packages
+    shell: mv site-packages {{ site_packages_backup_dir }}
+    args:
+        chdir: /usr/lib/python2.7
+
+  - name: restore_l3_agent_usr_lib_python_site_packages
+    shell: cp site-packages /usr/lib/python2.7
+    args:
+        chdir: /root/ansible_icehouse/rollback/usr/lib/python2.7
+
   - name: restore_orig_neutron_conf
     shell: cp -f /root/ansible_icehouse/rollback/etc/neutron/neutron.conf.orig /etc/neutron/neutron.conf
 
@@ -62,10 +76,12 @@
   - name: enable l3-agent
     shell: systemctl enable neutron-l3-agent.service
 
+  # restart neutron-server
+  - name: restart_neutron_server
+    shell: systemctl restart neutron-server.service
+
   # restart l3-agent
   - name: restart-l3-agent
     shell: systemctl restart neutron-l3-agent.service
 
-  # restart neutron-server
-  - name: restart_neutron_server
-    shell: systemctl restart neutron-server.service
+  # clean ASR configuration
