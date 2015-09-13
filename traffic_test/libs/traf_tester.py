@@ -79,13 +79,13 @@ def install_iperf(environment):
             if os_info in ['CentOS',
                            'Red Hat Enterprise Linux Server',
                            'Fedora']:
-                out = sudo("yum -y install iperf")
+                out = sudo("yum -y install iperf3")
                 if out.return_code == 0:
-                    logger.info("Installed iperf on %s" % (env.host_string))
+                    logger.info("Installed iperf3 on %s" % (env.host_string))
             elif os_info in ['Ubuntu','LinuxMint']:
-                out = sudo("apt-get -y install iperf")
+                out = sudo("apt-get -y install iperf3")
                 if out.return_code == 0:
-                    logger.info("Installed iperf on %s" % (env.host_string))
+                    logger.info("Installed iperf3 on %s" % (env.host_string))
         out = run("mkdir %s" % (test_results_path))
     except SystemExit, e:
         logger.warn("Exception while executing task: %s", str(e))
@@ -180,7 +180,8 @@ def iperf_tcp_pretty_table_content(config, data):
                      "dest_ep",
                      "interval_time",
                      "transferred",
-                     "bandwidth"])
+                     "bandwidth",
+                     "retr"])
 
     x.align["src_tenant"] = "l"  # Left align source tenant values
 
@@ -209,7 +210,8 @@ def iperf_tcp_pretty_table_content(config, data):
                                dest_tenant, dest_ep.replace('_', '.'),
                                bandwidth_stats['interval_time'],
                                bandwidth_stats['transferred'],
-                               bandwidth_stats['bandwidth']])
+                               bandwidth_stats['bandwidth'],
+                               bandwidth_stats['retr']])
     print x
 
 
@@ -301,7 +303,7 @@ def test_tcp(environment, config, server, endpoints, contract, timestamp):
                 if src_ep == env.host_string:
                     print src_ep
                 
-                    sudo("iperf -s -p 5001 -i 1 > tcptesttrafficserver-%s-%s.txt &" %
+                    sudo("iperf3 -s -p 5201 -i 1 > tcptesttrafficserver-%s-%s.txt &" %
                          (env.host_string.replace('.', '_'),
                           timestamp),
                          pty=False)
@@ -312,7 +314,7 @@ def test_tcp(environment, config, server, endpoints, contract, timestamp):
                 if dest_ep == env.host_string:
                     print dest_ep
                 
-                    sudo("iperf -c %s -t %s -p 5001 > tcptesttrafficclient-%s-%s-%s.txt &" %
+                    sudo("iperf3 -c %s -t %s -p 5201 > tcptesttrafficclient-%s-%s-%s.txt &" %
                          (server,
                           config['traffic']['iperf_duration'],
                           env.host_string.replace('.', '_'),
@@ -334,7 +336,7 @@ def test_udp(environment, config, server, endpoints, contract, timestamp):
                 if src_ep == env.host_string:
                     print src_ep
                 
-                    sudo("iperf -s -u -p 5002 -i 1 > udptesttrafficserver-%s-%s.txt &" %
+                    sudo("iperf3 -s -p 5202 -i 1 > udptesttrafficserver-%s-%s.txt &" %
                          (env.host_string.replace('.', '_'),
                           timestamp),
                          pty=False)
@@ -345,7 +347,7 @@ def test_udp(environment, config, server, endpoints, contract, timestamp):
                 if dest_ep == env.host_string:
                     print dest_ep
                 
-                    sudo("iperf -c %s -u -t %s -p 5002 > udptesttrafficclient-%s-%s-%s.txt &" %
+                    sudo("iperf3 -c %s -u -t %s -p 5202 > udptesttrafficclient-%s-%s-%s.txt &" %
                          (server,
                           config['traffic']['iperf_duration'],
                           env.host_string.replace('.', '_'),

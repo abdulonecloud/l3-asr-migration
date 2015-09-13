@@ -29,23 +29,25 @@ def get_test_results(file):
     (bandwidth_loss dict wth keys interval_time, transferred, bandwidth, 
      jitter, loss_datagram, total_datagram, loss_percent)
     """
+        
+    bandwidth_stats = \
+        {'interval_time': '',   # NOQA
+         'transferred': '',   # NOQA
+         'bandwidth': ''}   # NOQA
+    reportflag = False
     f = open(file, 'r')
-
     for line in f:
-        if "[ ID]" in line:
+        if "- - " in line:
+            reportflag = True
+        if "[ ID]" in line and reportflag:
             report = f.next()
             report_data = report.split(']')[1].split('  ')
             # also want packets transmitted, packets received, % packet loss
-            
             bandwidth_stats = \
-                {'interval_time': str(report_data[1]),   # NOQA
-                 'transferred': str(report_data[2]),   # NOQA
-                 'bandwidth': str(report_data[3].replace('\n', ''))}   # NOQA
-        else:
-            bandwidth_stats = \
-                {'interval_time': '',   # NOQA
-                 'transferred': '',   # NOQA
-                 'bandwidth': ''}   # NOQA    
+                {'interval_time': str(report_data[1]) + " " + str(report_data[2]),   # NOQA
+                 'transferred': str(report_data[3]),   # NOQA
+                 'bandwidth': str(report_data[4]),   # NOQA
+                 'retr': str(report_data[5])}   # NOQA
     
     test_results = {'bandwidth_stats': bandwidth_stats}
 

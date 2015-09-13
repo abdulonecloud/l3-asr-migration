@@ -29,10 +29,22 @@ def get_test_results(file):
     (bandwidth_loss dict wth keys interval_time, transferred, bandwidth, 
      jitter, loss_datagram, total_datagram, loss_percent)
     """
+    bandwidth_stats = \
+        {'interval_time': '',   # NOQA
+         'transferred': '',   # NOQA
+         'bandwidth': '',   # NOQA
+         'jitter': '',  # NOQA
+         'loss_datagram': '',  # NOQA
+         'total_datagram': '',  # NOQA
+         'loss_percent': ''}
+
+    reportflag = False
     f = open(file, 'r')
 
     for line in f:
-        if " Server Report:" in line:
+        if "- - " in line:
+            reportflag = True
+        if "[ ID]" in line and reportflag:
             report = f.next()
             report_data = report.split(']')[1].split('  ')
             # also want packets transmitted, packets received, % packet loss
@@ -41,22 +53,13 @@ def get_test_results(file):
             total_datagram = datagram.split('(')[0]
             loss_percent = datagram.split('(')[1].split('%')[0]
             bandwidth_stats = \
-                {'interval_time': str(report_data[1]),   # NOQA
-                 'transferred': str(report_data[2]),   # NOQA
-                 'bandwidth': str(report_data[3]),   # NOQA
-                 'jitter': str(report_data[4]),  # NOQA
+                {'interval_time': str(report_data[1]) + " " + str(report_data[2]),   # NOQA
+                 'transferred': str(report_data[3]),   # NOQA
+                 'bandwidth': str(report_data[4]),   # NOQA
+                 'jitter': str(report_data[5]),  # NOQA
                  'loss_datagram': str(loss_datagram),  # NOQA
                  'total_datagram': str(total_datagram),  # NOQA
                  'loss_percent': str(loss_percent)}
-        else:
-            bandwidth_stats = \
-                {'interval_time': '',   # NOQA
-                 'transferred': '',   # NOQA
-                 'bandwidth': '',   # NOQA
-                 'jitter': '',  # NOQA
-                 'loss_datagram': '',  # NOQA
-                 'total_datagram': '',  # NOQA
-                 'loss_percent': ''}
     
     test_results = {'bandwidth_stats': bandwidth_stats}
 
