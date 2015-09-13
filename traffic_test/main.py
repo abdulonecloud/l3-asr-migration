@@ -6,6 +6,7 @@ from libs import traf_tester as remote_libs
 from configobj import ConfigObj
 from argparse import ArgumentParser
 import pprint
+import json
 
 if not os.path.exists('logs'):
     os.makedirs('logs')
@@ -15,17 +16,19 @@ logger.setLevel(logging.DEBUG)
 
 action_list = ['start', 'stop']
 parser = ArgumentParser(description="Datapath traffic testing")
-parser.add_argument("-f", "--cfgfile", required=True, metavar="FILE")
+parser.add_argument("-f", "--cfgfile", required=True, metavar="config_input_file")
 parser.add_argument("-a", "--action", required=True)
 parser.add_argument("-t",
                     "--tid",
                     required=True,
                     help="Timestamp ID to reference for labeling test output")
+parser.add_argument("-i", "--jsoninput", required=False, metavar="endpoints_JSON_input_file")
 args = parser.parse_args()
 cfgfile = args.cfgfile
 config = ConfigObj(cfgfile)
 action = args.action
 tid = args.tid if args.tid else None
+json_input = args.jsoninput if args.jsoninput else None
 
 osutils = os_lib.OSUtils(config)
 
@@ -84,7 +87,6 @@ def get_port_subnets(tenant, port):
             'ip_address': port['fixed_ips'][0]['ip_address']}
 
 
-
 def get_instance_ports(ports):
     """
     Returns a list of instance interface ports
@@ -94,7 +96,6 @@ def get_instance_ports(ports):
         if port['device_owner'] == 'compute:nova':
             instance_port_list.append(port)
     return instance_port_list
-
 
 
 def get_subnet_endpoints(tenant, ports, subnet):
@@ -162,8 +163,8 @@ def get_traffic_testing_endpoint(src_tenant, dest_tenant,
     return endpoint
 
 
-def main():
-    logger.info('Start the program')
+def discover_endpoints():
+    logger.info('Discovering Live Endpoints')
     logger.info('Initialize OSUtils')
     endpoints_list = []
     endpoint_list = []
@@ -348,10 +349,10 @@ def main():
     logger.debug("endpoints list = %s" % (pprint.pformat(endpoints_list)))
 
 
-    #src_ip_list = ['192.168.61.131']
+    # #src_ip_list = ['192.168.61.131']
     # src_ip_list =['1.1.1.17']
     # dest_ip_list = ['192.168.61.229','192.168.61.132']
-    #dest_ip_list = ['192.168.61.129', '192.168.61.132']
+    # #dest_ip_list = ['192.168.61.129', '192.168.61.132']
     # dest_ip_list = ['10.1.25.128', '10.1.25.129', '10.1.25.130']
     # dest_ip_list = ['1.1.1.15','1.1.1.16','2.2.2.5','2.2.2.6']
     # contract = [{'name': 'allow_ssh',
@@ -373,13 +374,29 @@ def main():
     # endpoints_list = [endpoints]
 
     # # endpoints = {'src_tenant': 'sample',
-    # #             'dest_tenant': 'sample',
-    # #             'src_eps': src_ip_list,
-    # #             'dest_eps': dest_ip_list,
-    # #             'contract': contract}
+    #             'dest_tenant': 'sample',
+    #             'src_eps': src_ip_list,
+    #             'dest_eps': dest_ip_list,
+    #             'contract': contract}
     # # endpoints_list = [endpoints]
 
+    return endpoints_list
 
+
+def main():
+    logger.info('Start the program')
+    
+    if json_input:
+        # Passing preloaded Endpoints through JSON file
+        logger.info('Loading Endpoints from JSON Input File')
+        with open(json_input, 'r') as data_file:
+            endpoints_list = json.load(data_file)
+        logger.debug("JSON Input endpoints list = %s" % (pprint.pformat(endpoints_list)))
+    else:
+        # Discovering Endpoints from Live Openstack setup
+        endpoints_list = discover_endpoints()
+    
+    # Initiating Traffic Test on the target
     if tid:
         remote_libs.start_task(config, endpoints_list, action, tid)
     else:

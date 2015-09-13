@@ -7,10 +7,14 @@ Collection of tools and utility scripts to validate datapath traffic between end
 **Starting Traffic:**
 $ python main.py --cfgfile=conf/config.ini --action=start -t sample_timestamp_name_to_track
 
+**Note:** [Optional parameter to load endpoints as JSON input file
+--jsopninput=sample_endpoints.json
 
 **Stoping Traffic:**
 $ python main.py --cfgfile=conf/config.ini --action=stop -t sample_timestamp_name_to_track
 
+**Note:** [Optional parameter to load endpoints as JSON input file
+--jsopninput=sample_endpoints.json
 
 **Output:**
 
