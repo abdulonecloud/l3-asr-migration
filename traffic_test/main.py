@@ -8,7 +8,7 @@ from argparse import ArgumentParser
 import pprint
 import json
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from pytz import timezone
 
 if not os.path.exists('logs'):
@@ -388,6 +388,8 @@ def discover_endpoints():
 
 def main():
     logger.info('Start the program')
+    fmt = "%Y-%m-%d %H:%M:%S %Z%z"
+    start_time = datetime.now(timezone('US/Pacific'))
     
     if json_input:
         # Passing preloaded Endpoints through JSON file
@@ -395,9 +397,11 @@ def main():
         with open(json_input, 'r') as data_file:
             endpoints_list = json.load(data_file)
         logger.debug("JSON Input endpoints list = %s" % (pprint.pformat(endpoints_list)))
+        discovery_time = datetime.now(timezone('US/Pacific'))
     else:
         # Discovering Endpoints from Live Openstack setup
         endpoints_list = discover_endpoints()
+        discovery_time = datetime.now(timezone('US/Pacific'))
     
     # Initiating Traffic Test on the target
     if tid:
@@ -405,10 +409,21 @@ def main():
     else:
         remote_libs.start_task(config, endpoints_list, action)
 
-    fmt = "%Y-%m-%d %H:%M:%S %Z%z"
+    # Traffic Test Summary
     now_time = datetime.now(timezone('US/Pacific'))
-    print ("Current Time: %s" % (now_time.strftime(fmt)))
-
+    print "-"*65
+    print ("Traffic Test Time Summary :")
+    print "-"*65
+    print ("Traffic Started Time:\t\t %s" % (start_time.strftime(fmt)))
+    print ("Endpoints Discovered Time:\t %s" % (discovery_time.strftime(fmt)))
+    print ("Current Time:\t\t\t %s" % (now_time.strftime(fmt)))
+    if action == 'start':
+        stop_time = now_time + timedelta(seconds=int(config['traffic']['iperf_duration']))
+        print ("Estimated Traffic Stop Time:\t %s" % (stop_time.strftime(fmt)))
+        print "Status:\t\t\t\t\tTraffic Started !!"
+    else:
+        print "Status:\t\t\t\t\tTraffic Stopped !!"
+    print "-"*65
 
 if __name__ == '__main__':
     main()
