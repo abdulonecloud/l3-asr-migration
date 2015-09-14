@@ -8,6 +8,9 @@ from argparse import ArgumentParser
 import pprint
 import json
 
+from datetime import datetime
+from pytz import timezone
+
 if not os.path.exists('logs'):
     os.makedirs('logs')
 logging.config.fileConfig('conf/logging.ini')
@@ -401,6 +404,10 @@ def main():
         remote_libs.start_task(config, endpoints_list, action, tid)
     else:
         remote_libs.start_task(config, endpoints_list, action)
+
+    fmt = "%Y-%m-%d %H:%M:%S %Z%z"
+    now_time = datetime.now(timezone('US/Pacific'))
+    print ("Current Time: %s" % (now_time.strftime(fmt)))
 
 
 if __name__ == '__main__':
