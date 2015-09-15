@@ -48,12 +48,17 @@ def get_test_results(file):
             report = f.next()
             report_data = report.split(']')[1].split('  ')
             # also want packets transmitted, packets received, % packet loss
-            loss_datagram = report_data[6].split('/')[0]
             datagram = report.split('/')[2]
             total_datagram = datagram.split('(')[0]
             loss_percent = datagram.split('(')[1].split('%')[0]
+            if str(report_data[2]) == 'sec':
+                interval_time =str(report_data[1]) + " " + str(report_data[2])
+                loss_datagram = report_data[6].split('/')[0]
+            else:
+                interval_time =str(report_data[1])
+                loss_datagram = report_data[5].split('/')[0]
             bandwidth_stats = \
-                {'interval_time': str(report_data[1]) + " " + str(report_data[2]),   # NOQA
+                {'interval_time': interval_time,   # NOQA
                  'transferred': str(report_data[3]),   # NOQA
                  'bandwidth': str(report_data[4]),   # NOQA
                  'jitter': str(report_data[5]),  # NOQA

@@ -44,18 +44,27 @@ def get_test_results(file):
             report = f.next()
             report_data = report.split(']')[1].split('  ')
             # also want packets transmitted, packets received, % packet loss
-            if report_data[5] == '':
-                retr = str(report_data[5]) + str(report_data[6])   # NOQA
-            else:
-                retr = str(report_data[5])
             if str(report_data[2]) == 'sec':
-                interval_time =str(report_data[1]) + " " + str(report_data[2])
+                interval_time = str(report_data[1]) + " " + str(report_data[2])
+                transferred = str(report_data[3])
+                bandwidth = str(report_data[4])
+                if report_data[5] == '':
+                    retr = str(report_data[5]) + str(report_data[6])   # NOQA
+                else:
+                    retr = str(report_data[5])
             else:
-                interval_time =str(report_data[1])
+                interval_time = str(report_data[1])
+                transferred = str(report_data[2])
+                bandwidth = str(report_data[3])
+                if report_data[4] == '':
+                    retr = str(report_data[4]) + str(report_data[5])   # NOQA
+                else:
+                    retr = str(report_data[4])
+   
             bandwidth_stats = \
                 {'interval_time': interval_time,   # NOQA
-                 'transferred': str(report_data[3]),   # NOQA
-                 'bandwidth': str(report_data[4]),   # NOQA
+                 'transferred': transferred,   # NOQA
+                 'bandwidth': bandwidth,   # NOQA
                  'retr': retr}   # NOQA
     
     test_results = {'bandwidth_stats': bandwidth_stats}
