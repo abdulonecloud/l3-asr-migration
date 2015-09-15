@@ -381,7 +381,7 @@ def stop_traffic(environment, endpoints, timestamp):
 
 @task
 @parallel
-def stop_iperf_traffic(environment, traffic_type, server, endpoints, src_tenant, dest_tenant, timestamp):
+def stop_iperf_traffic(environment, traffic_type, server, dest_ep, src_tenant, dest_tenant, timestamp):
     try:
         
         if server == '':
@@ -391,26 +391,32 @@ def stop_iperf_traffic(environment, traffic_type, server, endpoints, src_tenant,
             except SystemExit, e:
                 logger.warn("Exception while executing task: %s", str(e))
 
-            print "endpoints are.....", endpoints
+            print "server endpoint is.....", dest_ep
 
             return True
         else:
 
             try:
-                print "Killing iperf on clients"
+                print "Killing iperf on client"
                 sudo("kill -SIGINT `pgrep iperf`")
             except SystemExit, e:
                 logger.warn("Exception while executing task: %s", str(e))
 
-            print "endpoints are.....", endpoints
+            print "client endpoint is.....", dest_ep
 
             if traffic_type == 'tcp':
                 put("scripts/get_iperf_tcp_statistics.py", "get_iperf_tcp_statistics.py")
-                out = run("python get_iperf_tcp_statistics.py %s" % (timestamp))
+                out = run("python get_iperf_tcp_statistics.py %s-%s-%s" %
+                          (dest_ep.replace('.', '_'),
+                           server.replace('.', '_'),
+                           timestamp))
 
             if traffic_type == 'udp':
                 put("scripts/get_iperf_udp_statistics.py", "get_iperf_udp_statistics.py")
-                out = run("python get_iperf_udp_statistics.py %s" % (timestamp))
+                out = run("python get_iperf_udp_statistics.py %s-%s-%s" %
+                          (dest_ep.replace('.', '_'),
+                           server.replace('.', '_'),
+                           timestamp))
 
             out_dict = json.JSONDecoder().decode(out)
 
@@ -443,7 +449,14 @@ def start_task(config, endpoints_list, action, testPrefix=None):
                     execute(install_hping, env)
                     execute(test_ping, env, config,
                             endpoints, contract, timestamp)
-        for endpoints in iperf_endpoint_list:
+        for fullendpoints in iperf_endpoint_list:
+            endpoints = {}
+            endpoints['contract'] = fullendpoints['contract']
+            endpoints['src_tenant'] = fullendpoints['src_tenant']
+            endpoints['src_eps'] = [fullendpoints['src_eps'][0]]
+            endpoints['dest_tenant'] = fullendpoints['dest_tenant']
+            endpoints['dest_eps'] = [fullendpoints['dest_eps'][0]]
+            endpoints['test_type'] = fullendpoints['test_type']
             for contract in endpoints['contract']:
                 if contract['protocol'] == 'tcp':
                     server_ip = [endpoints['dest_eps'][0]]
@@ -477,28 +490,37 @@ def start_task(config, endpoints_list, action, testPrefix=None):
                     setup_env(config, endpoints)
                     table_data = execute(stop_traffic, env, endpoints, timestamp)
                     output_table_data_list.append(table_data)
-        for endpoints in iperf_endpoint_list:
+        for fullendpoints in iperf_endpoint_list:
+            endpoints = {}
+            endpoints['contract'] = fullendpoints['contract']
+            endpoints['src_tenant'] = fullendpoints['src_tenant']
+            endpoints['src_eps'] = [fullendpoints['src_eps'][0]]
+            endpoints['dest_tenant'] = fullendpoints['dest_tenant']
+            endpoints['dest_eps'] = [fullendpoints['dest_eps'][0]]
+            endpoints['test_type'] = fullendpoints['test_type']
             for contract in endpoints['contract']:
                 if contract['protocol'] == 'tcp':
                     server_ip = [endpoints['dest_eps'][0]]
                     client_ip = endpoints['src_eps']
                     setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], server_ip, endpoints['test_type'])
                     server = ''
-                    execute(stop_iperf_traffic, env, 'tcp', server, server_ip, endpoints['src_tenant'], endpoints['dest_tenant'], timestamp)
+                    execute(stop_iperf_traffic, env, 'tcp', server, server_ip[0], endpoints['src_tenant'], endpoints['dest_tenant'], timestamp)
                     setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], client_ip, endpoints['test_type'])
                     server = server_ip[0]
-                    table_data = execute(stop_iperf_traffic, env, 'tcp', server, client_ip, endpoints['src_tenant'], endpoints['dest_tenant'], timestamp)
-                    tcp_output_table_data_list.append(table_data)
+                    for dest_ep in client_ip:
+                        table_data = execute(stop_iperf_traffic, env, 'tcp', server, dest_ep, endpoints['src_tenant'], endpoints['dest_tenant'], timestamp)
+                        tcp_output_table_data_list.append(table_data)
                 if contract['protocol'] == 'udp':
                     server_ip = [endpoints['dest_eps'][0]]
                     client_ip = endpoints['src_eps']
                     setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], server_ip, endpoints['test_type'])
                     server = ''
-                    execute(stop_iperf_traffic, env, 'udp', server, server_ip, endpoints['src_tenant'], endpoints['dest_tenant'], timestamp)
+                    execute(stop_iperf_traffic, env, 'udp', server, server_ip[0], endpoints['src_tenant'], endpoints['dest_tenant'], timestamp)
                     setup_iperf_env(config, endpoints['src_tenant'], endpoints['dest_tenant'], client_ip, endpoints['test_type'])
                     server = server_ip[0]
-                    table_data = execute(stop_iperf_traffic, env, 'udp', server, client_ip, endpoints['src_tenant'], endpoints['dest_tenant'], timestamp)
-                    udp_output_table_data_list.append(table_data)
+                    for dest_ep in client_ip:
+                        table_data = execute(stop_iperf_traffic, env, 'udp', server, dest_ep, endpoints['src_tenant'], endpoints['dest_tenant'], timestamp)
+                        udp_output_table_data_list.append(table_data)
     
     print "Traffic Test Type: "+config['traffic']['type']
     print "\n"
