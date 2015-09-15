@@ -11,7 +11,7 @@ filedir = os.getcwd()
 def get_list_of_filenames():
     file_list = []
     for file in os.listdir(filedir):
-        if file.startswith("tcp") and file.endswith("%s.txt" % (fileid)):
+        if file.startswith("tcptesttrafficclient") and file.endswith("%s.txt" % (fileid)):
             file_list.append(file)
     return file_list
 
