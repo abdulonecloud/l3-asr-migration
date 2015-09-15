@@ -47,9 +47,13 @@ def get_test_results(file):
             if report_data[5] == '':
                 retr = str(report_data[5]) + str(report_data[6])   # NOQA
             else:
-                retr = str(report_data[5]) 
+                retr = str(report_data[5])
+            if str(report_data[2]) == 'sec':
+                interval_time =str(report_data[1]) + " " + str(report_data[2])
+            else:
+                interval_time =str(report_data[1])
             bandwidth_stats = \
-                {'interval_time': str(report_data[1]) + " " + str(report_data[2]),   # NOQA
+                {'interval_time': interval_time,   # NOQA
                  'transferred': str(report_data[3]),   # NOQA
                  'bandwidth': str(report_data[4]),   # NOQA
                  'retr': retr}   # NOQA
