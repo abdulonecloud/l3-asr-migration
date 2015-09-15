@@ -33,7 +33,8 @@ def get_test_results(file):
     bandwidth_stats = \
         {'interval_time': '',   # NOQA
          'transferred': '',   # NOQA
-         'bandwidth': ''}   # NOQA
+         'bandwidth': '',   # NOQA
+         'retr': ''}   # NOQA
     reportflag = False
     f = open(file, 'r')
     for line in f:

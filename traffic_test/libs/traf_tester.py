@@ -126,31 +126,23 @@ def pretty_table_content(config, data):
                      "test_status"])
 
     x.align["src_tenant"] = "l"  # Left align source tenant values
-
     # One space between column edges and contents (default)
     x.padding_width = 1
     status = None
-
     dest_ep_regex = ".*-*-(?P<dest_ip>[0-9]+_[0-9]+_[0-9]+_[0-9]+)-.*"
     for content in data:
         for k, v in content.items():
             src_ep = k
             src_tenant = v['src_tenant']
             dest_tenant = v['dest_tenant']
-            # out = v['test_result'].split(',')
             test_result_files = v['test_result'].keys()
-
             for test_result_file in test_result_files:
-
                 dest_ep_match = re.match(dest_ep_regex, test_result_file)
-
                 dest_ep = dest_ep_match.group('dest_ip')
                 packet_stats = \
                     v['test_result'][test_result_file]['packet_stats']
-
                 packet_loss_percent = \
                     packet_stats['packet_loss']  # NOQA
-
                 try:
                     if (packet_loss_percent <= int(config['traffic']['allowed_delta_percentage'])):  # NOQA
                             status = 'Success'
@@ -158,9 +150,7 @@ def pretty_table_content(config, data):
                         status = 'Failed'
                 except ValueError:
                     status = 'Failed'
-
                 rtt_stats = v['test_result'][test_result_file]['rtt']
-
                 x.add_row([src_tenant, src_ep,
                            dest_tenant, dest_ep.replace('_', '.'),
                            packet_stats['packets_transmitted'],
@@ -181,37 +171,36 @@ def iperf_tcp_pretty_table_content(config, data):
                      "interval_time",
                      "transferred",
                      "bandwidth",
-                     "retr"])
+                     "retr",
+                     "test_status"])
 
     x.align["src_tenant"] = "l"  # Left align source tenant values
-
     # One space between column edges and contents (default)
     x.padding_width = 1
-
+    status = None
     dest_ep_regex = ".*-*-(?P<dest_ip>[0-9]+_[0-9]+_[0-9]+_[0-9]+)-.*"
     for content in data:
         for k, v in content.items():
             src_ep = k
             src_tenant = v['src_tenant']
             dest_tenant = v['dest_tenant']
-            # out = v['test_result'].split(',')
             test_result_files = v['test_result'].keys()
-
             for test_result_file in test_result_files:
-
                 dest_ep_match = re.match(dest_ep_regex, test_result_file)
-
                 dest_ep = dest_ep_match.group('dest_ip')
                 bandwidth_stats = \
                     v['test_result'][test_result_file]['bandwidth_stats']
-
                 if bandwidth_stats['interval_time'] and bandwidth_stats['transferred'] and bandwidth_stats['bandwidth']:
-                    x.add_row([src_tenant, src_ep,
-                               dest_tenant, dest_ep.replace('_', '.'),
-                               bandwidth_stats['interval_time'],
-                               bandwidth_stats['transferred'],
-                               bandwidth_stats['bandwidth'],
-                               bandwidth_stats['retr']])
+                    status = "Success"
+                else:
+                    status = "Failed"
+                x.add_row([src_tenant, src_ep,
+                           dest_tenant, dest_ep.replace('_', '.'),
+                           bandwidth_stats['interval_time'],
+                           bandwidth_stats['transferred'],
+                           bandwidth_stats['bandwidth'],
+                           bandwidth_stats['retr'],
+                           status])
     print x
 
 
@@ -226,43 +215,44 @@ def iperf_udp_pretty_table_content(config, data):
                      "jitter",
                      "loss_datagram",
                      "total_datagram",
-                     "loss_percent"])
+                     "loss_percent",
+                     "test_status"])
 
     x.align["src_tenant"] = "l"  # Left align source tenant values
-
     # One space between column edges and contents (default)
     x.padding_width = 1
-
+    status = None
     dest_ep_regex = ".*-*-(?P<dest_ip>[0-9]+_[0-9]+_[0-9]+_[0-9]+)-.*"
     for content in data:
         for k, v in content.items():
             src_ep = k
             src_tenant = v['src_tenant']
             dest_tenant = v['dest_tenant']
-            # out = v['test_result'].split(',')
             test_result_files = v['test_result'].keys()
-
             for test_result_file in test_result_files:
-
                 dest_ep_match = re.match(dest_ep_regex, test_result_file)
-
                 dest_ep = dest_ep_match.group('dest_ip')
                 bandwidth_stats = \
                     v['test_result'][test_result_file]['bandwidth_stats']
-
-                bandwidth_loss_percent = \
-                    bandwidth_stats['loss_percent']  # NOQA
-
+                if bandwidth_stats['loss_percent'] != '':
+                    bandwidth_loss_percent = \
+                    bandwidth_stats['loss_percent']+" %"  # NOQA
+                else:
+                    bandwidth_loss_percent = ""
                 if bandwidth_stats['interval_time'] and bandwidth_stats['transferred'] and bandwidth_stats['bandwidth']:
-                    x.add_row([src_tenant, src_ep,
-                               dest_tenant, dest_ep.replace('_', '.'),
-                               bandwidth_stats['interval_time'],
-                               bandwidth_stats['transferred'],
-                               bandwidth_stats['bandwidth'],
-                               bandwidth_stats['jitter'],
-                               bandwidth_stats['loss_datagram'],
-                               bandwidth_stats['total_datagram'],
-                               bandwidth_loss_percent+" %"])
+                    status = "Success"
+                else:
+                    status = "Failed"
+                x.add_row([src_tenant, src_ep,
+                           dest_tenant, dest_ep.replace('_', '.'),
+                           bandwidth_stats['interval_time'],
+                           bandwidth_stats['transferred'],
+                           bandwidth_stats['bandwidth'],
+                           bandwidth_stats['jitter'],
+                           bandwidth_stats['loss_datagram'],
+                           bandwidth_stats['total_datagram'],
+                           bandwidth_loss_percent,
+                           status])
     print x
 
 
