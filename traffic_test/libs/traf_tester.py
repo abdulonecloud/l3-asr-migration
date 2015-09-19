@@ -293,7 +293,7 @@ def test_tcp(environment, config, server, endpoints, contract, timestamp):
                 if src_ep == env.host_string:
                     print src_ep
                 
-                    sudo("iperf3 -s -p 5201 -i 1 > tcptesttrafficserver-%s-%s.txt &" %
+                    sudo("iperf3 -s -p 5201 -i 1 > tcptesttrafficserver-%s-%s.txt 2>&1 &" %
                          (env.host_string.replace('.', '_'),
                           timestamp),
                          pty=False)
@@ -304,7 +304,7 @@ def test_tcp(environment, config, server, endpoints, contract, timestamp):
                 if dest_ep == env.host_string:
                     print dest_ep
                 
-                    sudo("iperf3 -c %s -t %s -p 5201 > tcptesttrafficclient-%s-%s-%s.txt &" %
+                    sudo("iperf3 -c %s -t %s -p 5201 > tcptesttrafficclient-%s-%s-%s.txt 2>&1 &" %
                          (server,
                           config['traffic']['iperf_duration'],
                           env.host_string.replace('.', '_'),
@@ -326,7 +326,7 @@ def test_udp(environment, config, server, endpoints, contract, timestamp):
                 if src_ep == env.host_string:
                     print src_ep
                 
-                    sudo("iperf3 -s -p 5202 -i 1 > udptesttrafficserver-%s-%s.txt &" %
+                    sudo("iperf3 -s -p 5202 -i 1 > udptesttrafficserver-%s-%s.txt 2>&1 &" %
                          (env.host_string.replace('.', '_'),
                           timestamp),
                          pty=False)
@@ -337,7 +337,7 @@ def test_udp(environment, config, server, endpoints, contract, timestamp):
                 if dest_ep == env.host_string:
                     print dest_ep
                 
-                    sudo("iperf3 -c %s -u -t %s -p 5202 > udptesttrafficclient-%s-%s-%s.txt &" %
+                    sudo("iperf3 -c %s -u -t %s -p 5202 > udptesttrafficclient-%s-%s-%s.txt 2>&1 &" %
                          (server,
                           config['traffic']['iperf_duration'],
                           env.host_string.replace('.', '_'),
