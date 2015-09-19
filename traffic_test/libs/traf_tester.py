@@ -271,8 +271,10 @@ def test_ping(environment, config, endpoints, contract, timestamp):
     try:
         for dest_ep in endpoints['dest_eps']:
             if dest_ep != env.host_string:
-                sudo("hping3 %s --icmp --fast -q 2>"
-                     " testtraffic-%s-%s-%s.txt 1> /dev/null &" %
+                #sudo("hping3 %s --icmp --fast -q 2>"
+                #     " testtraffic-%s-%s-%s.txt 1> /dev/null &" %
+                sudo("hping3 %s --icmp --fast -q >"
+                     " testtraffic-%s-%s-%s.txt 2>&1 &" %
                      (dest_ep,
                       env.host_string.replace('.', '_'),
                       dest_ep.replace('.', '_'),
