@@ -44,6 +44,11 @@
   
   - name: git_clone_icehouse
     git: repo={{ project_repo }} dest=/root/ansible_icehouse/neutron version={{ project_branch }}
+  
+  - name: touch_icehouse_cisco_neutron_files
+    shell: find . -name "*.py" | xargs touch
+    args:
+        chdir: /root/ansible_icehouse/neutron
 
   - name: install_icehouse_neutron
     shell: python setup.py install
@@ -124,9 +129,18 @@
 
   - name: stop_l3_agent
     shell: systemctl stop neutron-l3-agent.service
-  
-  - name: start_cisco-cfg-agent
-    shell: systemctl start neutron-cisco-cfg-agent.service
 
   - name: restart_neutron_server
     shell: systemctl restart neutron-server.service
+
+  - name: start_cisco-cfg-agent
+    shell: systemctl start neutron-cisco-cfg-agent.service
+
+  - name: dump systemctl neutron status
+    shell: systemctl list-units | grep -i neutron
+
+  - name: shut no shut ext-net facing subinterfaces on ASR 
+    debug: msg="!!!! shut/no shut ext-net facing subinterfaces on ASR !!!!"
+
+  - name: clean_upstream_arp_cache_msg 
+    debug: msg="!!!! clean upstream arp caches in ext-gateway router !!!!"
