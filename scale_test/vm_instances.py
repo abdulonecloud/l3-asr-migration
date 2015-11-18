@@ -26,6 +26,7 @@ def launch_vm_on_network(tenant_name, vm_name, network_id):
     """
     tenant_credentials = get_tenant_nova_credentials(tenant_name)
     nova = nvclient.Client(**tenant_credentials)
+    nova.quotas.update(tenant_name, instances=-1, cores=-1, ram=-1, fixed_ips=-1, floating_ips=-1)
     image = nova.images.find(name="Cirros")
     flavor = nova.flavors.find(name="m1.tiny")
     try:
@@ -59,6 +60,7 @@ def terminate_vm_on_network(tenant_name, vm_name, network_name):
     """
     tenant_credentials = get_tenant_nova_credentials(tenant_name)
     nova = nvclient.Client(**tenant_credentials)
+    nova.quotas.delete(tenant_name)
     try:
         instance = nova.servers.find(name=vm_name)
         nova.servers.delete(instance.id)
