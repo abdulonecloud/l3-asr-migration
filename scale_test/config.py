@@ -17,6 +17,8 @@ USER_COUNT = 1
 USER_PASSWORD = 'secret'
 NETWORK_COUNT = 2
 VM_COUNT = 1
+IMAGE_NAME = 'Cirros'
+FLAVOUR_NAME = 'm1.tiny'
 EXTERNAL_NETWORK = 'public'
 
 # Floating IP Settings

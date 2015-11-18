@@ -8,7 +8,7 @@ import os
 import time
 import novaclient.v1_1.client as nvclient
 from novaclient.base import *
-from config import FLOATING_IP_CREATION
+from config import FLOATING_IP_CREATION, IMAGE_NAME, FLAVOUR_NAME
 from credentials import get_nova_credentials, get_tenant_nova_credentials
 from floating_ips import add_floating_ip_for_vm
 
@@ -27,8 +27,8 @@ def launch_vm_on_network(tenant_name, vm_name, network_id):
     tenant_credentials = get_tenant_nova_credentials(tenant_name)
     nova = nvclient.Client(**tenant_credentials)
     nova.quotas.update(tenant_name, instances=-1, cores=-1, ram=-1, fixed_ips=-1, floating_ips=-1)
-    image = nova.images.find(name="Cirros")
-    flavor = nova.flavors.find(name="m1.tiny")
+    image = nova.images.find(name=IMAGE_NAME)
+    flavor = nova.flavors.find(name=FLAVOUR_NAME)
     try:
         instance = nova.servers.create(name=vm_name, image=image,
                                        flavor=flavor,
